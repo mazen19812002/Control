@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الكنترول الجامعي الشامل - الإصدار الاحترافي المستقر</title>
+    <title>نظام الكنترول الجامعي الشامل</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style id="dynamicStyles"></style>
@@ -173,9 +173,7 @@
 
         .floating-btn { position: fixed; bottom: 55px; left: 25px; width: 55px; height: 55px; border-radius: 50%; background: #004d40; color: white; font-size: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2500; border: none; }
         .floating-btn:hover { transform: scale(1.15) rotate(180deg); }
-        .footer { background: var(--footer-gradient); background-size: 400% 400%; animation: scrollGradient 10s linear infinite; color: white; text-align: center; padding: 10px; font-size: 15px; font-weight: bold; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
-        @keyframes scrollGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .hidden-ui .footer, .hidden-ui .top-controls { opacity: 0; pointer-events: none; }
+        .hidden-ui .top-controls { opacity: 0; pointer-events: none; }
 
         /* إخفاء تذييل الطباعة في العرض العادي */
         .print-footer-tfoot { display: none; }
@@ -184,7 +182,7 @@
             @page { size: A3 landscape; margin: 5mm; }
             body { background: white !important; zoom: 0.65; }
             .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .top-controls, .drag-drop-section, .search-input, .floating-btn, .footer, h1, .control-panels-wrapper { display: none !important; }
+            .top-controls, .drag-drop-section, .search-input, .floating-btn, h1, .control-panels-wrapper { display: none !important; }
             .bulk-input, input[type="checkbox"] { display: none !important; }
             .table-responsive { max-height: none !important; overflow: visible !important; box-shadow: none !important; margin-top: 0 !important;}
             
@@ -321,7 +319,17 @@
     </div>
 
     <div class="container">
-        <h1>📊 لوحة الكنترول الجامعي: معالجة الكشوف ورصد درجات الرأفة المرنة</h1>
+        <h1>📊 لوحة الكنترول الجامعي</h1>
+        
+        <div style="background: rgba(255,255,255,0.85); padding: 8px 15px; border-radius: 20px; border: 2px solid #b2ebf2; display: flex; gap: 15px; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 20px; width: fit-content; margin-left: auto; margin-right: auto;">
+            <span>طريقة قراءة الكشوف:</span>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="readMode" value="manual" checked onchange="toggleReadMode()"> 📂 سحب وإفلات (يدوي)
+            </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="readMode" value="auto" onchange="toggleReadMode()"> 🌐 سيرفر GitHub (تلقائي)
+            </label>
+        </div>
         
         <div class="drag-drop-section" id="dragDropArea">
             <div class="file-bank" id="fileBank" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -348,25 +356,14 @@
         </div>
 
         <div class="control-panels-wrapper">
-            <div style="background: rgba(255,255,255,0.85); padding: 8px 15px; border-radius: 20px; border: 2px solid #b2ebf2; display: flex; gap: 15px; align-items: center; font-weight: bold;">
-                <span>طريقة قراءة الكشوف:</span>
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                    <input type="radio" name="readMode" value="manual" checked onchange="toggleReadMode()"> 📂 سحب وإفلات (يدوي)
-                </label>
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                    <input type="radio" name="readMode" value="auto" onchange="toggleReadMode()"> 🌐 سيرفر GitHub (تلقائي)
-                </label>
-            </div>
-
             <button class="btn-action" onclick="processMappedFiles()">⚙️ تحميل ومعالجة الكشوف</button>
             <button class="btn-stats" onclick="openStatsModal()">📊 إحصائيات ونسب النجاح</button>
             <button class="btn-action" style="background: var(--btn-purple);" onclick="openStudentDetailModal()">🔍 استعلام وطباعة شهادة طالب</button>
             <button class="btn-grievance" onclick="openGrievanceModal()">📝 تقرير التظلمات</button>
             <button class="btn-print" onclick="window.print()">🖨️ طباعة الكشوف (PDF)</button>
-            
             <button class="btn-settings" onclick="openSettingsModal()">⚙️ الإعدادات</button>
-            
             <button class="btn-danger" onclick="resetSystemData()">🗑️ مسح الكل</button>
+            <button id="showHiddenColsBtn" class="btn-action" style="display: none; background: var(--btn-orange);" onclick="showAllHiddenCols()">👁️ إظهار جميع المواد المخفية</button>
         </div>
 
         <div class="search-dropdown-container">
@@ -557,7 +554,6 @@
     </div>
 
     <button class="floating-btn" onclick="toggleUIVisibility()">👁️</button>
-    <div class="footer">All rights are reserved to Dr. Mazen Badawy – Doctor of English Teaching & Testing</div>
 
     <script>
         function findColumnKey(rowObj, includeKeywords, excludeKeywords = []) {
@@ -674,6 +670,14 @@
         function toggleCol(className, isVisible) {
             if (isVisible) hiddenCols.delete(className); else hiddenCols.add(className);
             updateDynamicStyles();
+            document.getElementById('showHiddenColsBtn').style.display = hiddenCols.size > 0 ? 'inline-flex' : 'none';
+        }
+        
+        function showAllHiddenCols() {
+            hiddenCols.clear();
+            updateDynamicStyles();
+            document.querySelectorAll('th input[type="checkbox"]').forEach(c => c.checked = true);
+            document.getElementById('showHiddenColsBtn').style.display = 'none';
         }
         
         function updateDynamicStyles() {
@@ -1924,6 +1928,7 @@
             document.querySelectorAll('.mapping-table td.drop-zone').forEach(td => td.innerHTML = '');
             document.getElementById('masterFileUploader').value = '';
             document.getElementById('tableBody').innerHTML = `<tr><td colspan="45" style="color: #757575; padding: 40px; font-size:18px;">تم مسح البيانات بنجاح... يرجى إعادة رفع وتوزيع الشيتات.</td></tr>`;
+            document.getElementById('showHiddenColsBtn').style.display = 'none';
             if(chartInstance) chartInstance.destroy();
             mappedSubjects = [...defaultSubjects];
             initMappingTable();
