@@ -38,7 +38,16 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         h1, h2 { font-weight: bold; text-align: center; color: #006064; }
-        h1 { font-size: 30px; margin: 15px 0; } h2 { font-size: 24px; margin-bottom: 12px; }
+        h1 { font-size: 30px; margin: 15px 0 5px 0; } h2 { font-size: 24px; margin-bottom: 12px; }
+
+        /* سويتش طريقة التحميل */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #00bcd4; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .loading-switch-container { text-align: center; margin-bottom: 15px; font-weight: bold; color: #006064; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .container {
             flex: 1; width: 99%; max-width: 1920px; margin: 15px auto 80px auto;
@@ -95,7 +104,7 @@
         .default-text { color: #888; }
         .modified-text { color: #000; font-weight: 900; }
 
-        .search-input { width: 100%; padding: 12px; border: 2px solid #00b4db; border-radius: 10px; box-sizing: border-box; outline: none; font-weight: bold; font-size: 18px; margin: 15px 0;}
+        .search-input { width: 100%; padding: 12px; border: 2px solid #00b4db; border-radius: 10px; box-sizing: border-box; outline: none; font-weight: bold; font-size: 18px;}
         .bulk-input { width: 65px; padding: 2px; margin-top: 5px; font-size: 13px; font-weight: bold; text-align: center; border-radius: 6px; border: 1px solid #fff; background: rgba(255, 255, 255, 0.9); color: #004d40; }
 
         .table-responsive { overflow-x: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-height: 60vh; overflow-y: auto; }
@@ -184,7 +193,7 @@
             @page { size: A3 landscape; margin: 5mm; }
             body { background: white !important; zoom: 0.65; }
             .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .top-controls, .drag-drop-section, .search-input, .floating-btn, .footer, h1, .control-panels-wrapper { display: none !important; }
+            .top-controls, .drag-drop-section, .search-dropdown-container, .floating-btn, .footer, h1, .loading-switch-container, .control-panels-wrapper { display: none !important; }
             .bulk-input, input[type="checkbox"] { display: none !important; }
             .table-responsive { max-height: none !important; overflow: visible !important; box-shadow: none !important; margin-top: 0 !important;}
             
@@ -321,7 +330,15 @@
     </div>
 
     <div class="container">
-        <h1>📊 لوحة الكنترول الجامعي: معالجة الكشوف ورصد درجات الرأفة المرنة</h1>
+        <h1>📊 لوحة الكنترول الجامعي</h1>
+        
+        <div class="loading-switch-container">
+            <span>طريقة التحميل</span>
+            <label class="switch">
+                <input type="checkbox" id="loadingMethodSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
         
         <div class="drag-drop-section" id="dragDropArea">
             <div class="file-bank" id="fileBank" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -348,17 +365,7 @@
         </div>
 
         <div class="control-panels-wrapper">
-            <div style="background: rgba(255,255,255,0.85); padding: 8px 15px; border-radius: 20px; border: 2px solid #b2ebf2; display: flex; gap: 15px; align-items: center; font-weight: bold;">
-                <span>طريقة قراءة الكشوف:</span>
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                    <input type="radio" name="readMode" value="manual" checked onchange="toggleReadMode()"> 📂 سحب وإفلات (يدوي)
-                </label>
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                    <input type="radio" name="readMode" value="auto" onchange="toggleReadMode()"> 🌐 سيرفر GitHub (تلقائي)
-                </label>
-            </div>
-
-            <button class="btn-action" onclick="processMappedFiles()">⚙️ تحميل ومعالجة الكشوف</button>
+            <button class="btn-action" onclick="processMappedFiles()">⚙️ معالجة الكشوف واستخراج النتائج</button>
             <button class="btn-stats" onclick="openStatsModal()">📊 إحصائيات ونسب النجاح</button>
             <button class="btn-action" style="background: var(--btn-purple);" onclick="openStudentDetailModal()">🔍 استعلام وطباعة شهادة طالب</button>
             <button class="btn-grievance" onclick="openGrievanceModal()">📝 تقرير التظلمات</button>
@@ -369,8 +376,9 @@
             <button class="btn-danger" onclick="resetSystemData()">🗑️ مسح الكل</button>
         </div>
 
-        <div class="search-dropdown-container">
-            <input type="text" id="mainSearchInput" class="search-input" placeholder="🔎 تصفية الجدول الرئيسي بالاسم، أو رقم الجلوس (يدعم *)..." oninput="handleMainWildcardSearch()">
+        <div class="search-dropdown-container" style="display: flex; gap: 15px; align-items: center; margin: 15px 0;">
+            <input type="text" id="mainSearchInput" class="search-input" style="margin: 0; flex: 1;" placeholder="🔎 تصفية الجدول الرئيسي بالاسم، أو رقم الجلوس (يدعم *)..." oninput="handleMainWildcardSearch()">
+            <button id="showHiddenBtn" class="btn-action" style="display: none; background: var(--btn-orange); height: 50px; white-space: nowrap;" onclick="showAllHiddenSubjects()">👁️ إظهار جميع المواد المخفية</button>
         </div>
 
         <div class="table-responsive">
@@ -617,18 +625,6 @@
 
         const defaultSubjects = ['رياضيات', 'ميكانيكا', 'فيزياء', 'تكنولوجيا', 'حاسب', 'كيمياء', 'تاريخ', 'انجليزي', 'رسم'];
         let mappedSubjects = [...defaultSubjects]; 
-        
-        const fileMapping = {
-            'رياضيات': { t1: 'رياضيات ترم اول.xlsx', t2: 'رياضيات ترم ثاني.xlsx' },
-            'ميكانيكا': { t1: 'ميكانيكا ترم اول.xlsx', t2: 'ميكانيكا ترم ثاني.xlsx' },
-            'فيزياء': { t1: 'فيزياء ترم اول.xlsx', t2: 'فيزياء ترم ثاني.xlsx' },
-            'تكنولوجيا': { t1: 'تكنولوجيا ترم اول.xlsx', t2: null },
-            'حاسب': { t1: 'حاسب ترم اول.xlsx', t2: null },
-            'كيمياء': { t1: null, t2: 'كيمياء ترم ثاني.xlsx' },
-            'تاريخ': { t1: null, t2: 'تاريخ ترم ثاني.xlsx' },
-            'انجليزي': { t1: null, t2: 'انجليزي ترم ثاني.xlsx' },
-            'رسم': { t1: 'رسم ترم اول.xlsx', t2: 'رسم ترم ثاني.xlsx' }
-        };
 
         let dynamicContinuousSubjects = []; 
         const practicalSubjectsKeys = ['فيزياء', 'كيمياء', 'تكنولوجيا', 'حاسب']; 
@@ -646,15 +642,6 @@
         let repeaterGraceLimitPct = 10;
         
         let currentGrievanceStudent = null;
-
-        function toggleReadMode() {
-            let mode = document.querySelector('input[name="readMode"]:checked').value;
-            if (mode === 'manual') {
-                document.getElementById('dragDropArea').style.display = 'flex';
-            } else {
-                document.getElementById('dragDropArea').style.display = 'none';
-            }
-        }
 
         function openSettingsModal() { document.getElementById('settingsModal').style.display = 'block'; }
         function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
@@ -674,8 +661,21 @@
         function toggleCol(className, isVisible) {
             if (isVisible) hiddenCols.delete(className); else hiddenCols.add(className);
             updateDynamicStyles();
+            
+            // Toggle visibility of the Show All button
+            const showBtn = document.getElementById('showHiddenBtn');
+            if (showBtn) {
+                showBtn.style.display = hiddenCols.size > 0 ? 'inline-flex' : 'none';
+            }
         }
         
+        function showAllHiddenSubjects() {
+            hiddenCols.clear();
+            updateDynamicStyles();
+            document.querySelectorAll('#mainTableHeader input[type="checkbox"]').forEach(c => c.checked = true);
+            document.getElementById('showHiddenBtn').style.display = 'none';
+        }
+
         function updateDynamicStyles() {
             let styles = '';
             hiddenCols.forEach(cls => { styles += `.${cls} { display: none !important; }\n`; });
@@ -784,8 +784,10 @@
                 let colSpan = hasPractical ? 5 : 4; 
                 let labelText = isContinuous ? `${dispName} (ممتدة)` : dispName;
                 
+                let isChecked = hiddenCols.has(subCls) ? '' : 'checked';
+
                 row1 += `<th colspan="${colSpan}" class="${subCls}">
-                            <label style="cursor:pointer;"><input type="checkbox" checked onchange="toggleCol('${subCls}', this.checked)"> ${labelText}</label><br>
+                            <label style="cursor:pointer;"><input type="checkbox" ${isChecked} onchange="toggleCol('${subCls}', this.checked)"> ${labelText}</label><br>
                             <input type="number" min="0" class="bulk-input" placeholder="+ درجات" onchange="updateBulkMark('${defSub}', this.value)">
                         </th>`;
 
@@ -879,189 +881,144 @@
             buildMainTableHeader();
         }
 
-        function processExcelData(fileBuffer, defSubject, termNum) {
-            const currentWorkbook = XLSX.read(fileBuffer, { type: 'array' });
-            currentWorkbook.SheetNames.forEach(sheetName => {
-                const currentWorksheet = currentWorkbook.Sheets[sheetName];
-                const rowsJson = XLSX.utils.sheet_to_json(currentWorksheet, { defval: 0 });
-
-                rowsJson.forEach(row => {
-                    let seatKey = findColumnKey(row, ['جلوس', 'Seat']);
-                    let nameKey = findColumnKey(row, ['اسم', 'الاسم', 'Name']);
-                    let statusKey = findColumnKey(row, ['حالة', 'الحالة']);
-                    
-                    let finalTotalKey = findColumnKey(row, ['النهائي', 'النهائية', 'اجمالي', 'إجمالي', 'اجمالى', 'Total']);
-                    let yearWorkKey = findColumnKey(row, ['المجموع', 'مجموع', 'أعمال', 'اعمال', 'سنة', 'السنة', 'YW'], finalTotalKey ? [finalTotalKey] : []);
-                    let practicalKey = findColumnKey(row, ['عملي', 'شفوي', 'العملي', 'الشفهي']);
-                    let writtenKey = findColumnKey(row, ['تحريري', 'التحريري', 'الامتحان التحريري', 'كراسة']);
-
-                    let seatNo = seatKey ? String(row[seatKey]).trim() : '';
-                    let studentName = nameKey ? String(row[nameKey]).trim() : '';
-                    let studentStatus = statusKey ? String(row[statusKey]).trim() : 'باقي';
-                    
-                    let isPassedBefore = Object.values(row).some(v => String(v).includes('سبق نجاحه') || String(v).includes('سبق نجاحها'));
-
-                    let ywVal = yearWorkKey && row[yearWorkKey] !== undefined ? parseFloat(row[yearWorkKey]) || 0 : 0;
-                    let pracVal = practicalKey && row[practicalKey] !== undefined ? parseFloat(row[practicalKey]) || 0 : 0;
-                    
-                    let writStr = writtenKey ? String(row[writtenKey]).trim() : '';
-                    let isAbsent = writStr === 'غ' || writStr === 'غائب';
-                    let writVal = isAbsent ? 0 : (parseFloat(writStr) || 0);
-
-                    let totVal = ywVal + pracVal + writVal; 
-
-                    let maxYWVal = 0, maxPracVal = 0, maxWritVal = 0;
-                    if (yearWorkKey) { let m = yearWorkKey.match(/\(\s*(\d+)\s*\)/); maxYWVal = m ? parseFloat(m[1]) : 0; }
-                    if (practicalKey) { let m = practicalKey.match(/\(\s*(\d+)\s*\)/); maxPracVal = m ? parseFloat(m[1]) : 0; }
-                    if (writtenKey) { let m = writtenKey.match(/\(\s*(\d+)\s*\)/); maxWritVal = m ? parseFloat(m[1]) : 0; }
-                    let maxTotVal = maxYWVal + maxPracVal + maxWritVal;
-
-                    if (!seatNo && !studentName) return; 
-
-                    let primaryLookupKey = seatNo || studentName;
-                    let matchedRecordKey = Object.keys(studentsDatabase).find(k => 
-                        (seatNo && studentsDatabase[k].seatNumber === seatNo) || 
-                        (studentName && studentsDatabase[k].name === studentName)
-                    );
-
-                    if (matchedRecordKey) primaryLookupKey = matchedRecordKey;
-
-                    if (!studentsDatabase[primaryLookupKey]) {
-                        studentsDatabase[primaryLookupKey] = {
-                            seatNumber: seatNo, name: studentName, status: studentStatus, scores: {}, maxScores: {}, _gradesForStats: {}, _displayData: {}, _overallStatCategory: ''
-                        };
-                        defaultSubjects.forEach(sub => {
-                            studentsDatabase[primaryLookupKey].scores[sub] = { 
-                                t1: { yw: '-', prac: '-', writ: '-', maxTot: 0, maxWr: 0, maxYW: 0, maxPrac: 0, isAbsent: false }, 
-                                t2: { yw: '-', prac: '-', writ: '-', maxTot: 0, maxWr: 0, maxYW: 0, maxPrac: 0, isAbsent: false }, 
-                                total: { yw: 0, prac: 0, writ: 0, tot: 0 }, 
-                                passedT1: false, passedT2: false, isAbsent: false, absentTerms: 0, totalTerms: 0 
-                            };
-                            studentsDatabase[primaryLookupKey].maxScores[sub] = { yearWork: 0, practical: 0, written: 0, finalTotal: 0 };
-                            studentsDatabase[primaryLookupKey]._gradesForStats[sub] = 'غائب'; 
-                        });
-                    }
-
-                    if (seatNo && !studentsDatabase[primaryLookupKey].seatNumber) studentsDatabase[primaryLookupKey].seatNumber = seatNo;
-                    if (studentName && !studentsDatabase[primaryLookupKey].name) studentsDatabase[primaryLookupKey].name = studentName;
-                    if (studentStatus.includes("باق") || studentStatus.includes("باقي")) studentsDatabase[primaryLookupKey].status = "باقي";
-
-                    let subScores = studentsDatabase[primaryLookupKey].scores[defSubject];
-                    if (!subScores) return;
-
-                    if (isPassedBefore) {
-                        if (termNum === 1) subScores.passedT1 = true;
-                        else if (termNum === 2) subScores.passedT2 = true;
-                    }
-
-                    let isContinuous = dynamicContinuousSubjects.includes(defSubject);
-
-                    if (isContinuous) {
-                        let tObj = termNum === 1 ? subScores.t1 : subScores.t2;
-                        tObj.yw = yearWorkKey && row[yearWorkKey] !== undefined ? ywVal : '-';
-                        tObj.prac = practicalKey && row[practicalKey] !== undefined ? pracVal : '-';
-                        tObj.writ = isAbsent ? 'غ' : (writtenKey && row[writtenKey] !== undefined ? writVal : '-');
-                        tObj.isAbsent = isAbsent;
-                        tObj.maxTot = maxTotVal;
-                        tObj.maxWr = maxWritVal;
-                        tObj.maxYW = maxYWVal;
-                        tObj.maxPrac = maxPracVal;
-
-                        if(!isPassedBefore) {
-                            subScores.totalTerms++;
-                            if (isAbsent) subScores.absentTerms++;
-                        }
-                    } else {
-                        if(!isPassedBefore) {
-                            subScores.total.yw = ywVal;
-                            subScores.total.prac = pracVal;
-                            subScores.total.writ = writVal;
-                            subScores.total.tot = totVal;
-                            subScores.isAbsent = isAbsent;
-
-                            let mScores = studentsDatabase[primaryLookupKey].maxScores[defSubject];
-                            if (mScores) {
-                                mScores.yearWork = maxYWVal;
-                                mScores.practical = maxPracVal;
-                                mScores.written = maxWritVal;
-                                mScores.finalTotal = maxTotVal;
-                            }
-                        }
-                    }
-                });
-            });
-        }
-
         async function processMappedFiles() {
             try {
                 document.getElementById('loader').style.display = 'block'; 
+                updateContinuousSubjects();
                 studentsDatabase = {}; 
-                dynamicContinuousSubjects = [];
                 let hasProcessedAnyFile = false;
-                
-                let mode = document.querySelector('input[name="readMode"]:checked').value;
+                const dropZones = document.querySelectorAll('.mapping-table td.drop-zone');
 
-                if (mode === 'manual') {
-                    const dropZones = document.querySelectorAll('.mapping-table td.drop-zone');
-                    for (let i = 0; i < defaultSubjects.length; i++) {
-                        let t1HasFiles = document.querySelector(`td.drop-zone[data-subject-idx="${i}"][data-term="1"] .file-chip`) !== null;
-                        let t2HasFiles = document.querySelector(`td.drop-zone[data-subject-idx="${i}"][data-term="2"] .file-chip`) !== null;
-                        if (t1HasFiles && t2HasFiles) {
-                            dynamicContinuousSubjects.push(defaultSubjects[i]);
-                        }
-                    }
+                for (let zone of dropZones) {
+                    let subjectIdx = parseInt(zone.getAttribute('data-subject-idx'));
+                    let termNum = parseInt(zone.getAttribute('data-term'));
+                    let defSubject = defaultSubjects[subjectIdx]; 
 
-                    for (let zone of dropZones) {
-                        let subjectIdx = parseInt(zone.getAttribute('data-subject-idx'));
-                        let termNum = parseInt(zone.getAttribute('data-term'));
-                        let defSubject = defaultSubjects[subjectIdx]; 
+                    let chips = zone.querySelectorAll('.file-chip');
+                    if (chips.length > 0) hasProcessedAnyFile = true;
 
-                        let chips = zone.querySelectorAll('.file-chip');
-                        if (chips.length > 0) hasProcessedAnyFile = true;
+                    for (let chip of chips) {
+                        let file = globalFilesStore[chip.id];
+                        if (!file) continue;
 
-                        for (let chip of chips) {
-                            let file = globalFilesStore[chip.id];
-                            if (!file) continue;
-                            const fileBuffer = await file.arrayBuffer();
-                            processExcelData(fileBuffer, defSubject, termNum);
-                        }
-                    }
-                } else {
-                    for (let sub of defaultSubjects) {
-                        if (fileMapping[sub].t1 && fileMapping[sub].t2) {
-                            dynamicContinuousSubjects.push(sub);
-                        }
-                    }
+                        const fileBuffer = await file.arrayBuffer();
+                        const currentWorkbook = XLSX.read(fileBuffer, { type: 'array' });
 
-                    for (let i = 0; i < defaultSubjects.length; i++) {
-                        let defSubject = defaultSubjects[i];
-                        let mapping = fileMapping[defSubject];
+                        currentWorkbook.SheetNames.forEach(sheetName => {
+                            const currentWorksheet = currentWorkbook.Sheets[sheetName];
+                            const rowsJson = XLSX.utils.sheet_to_json(currentWorksheet, { defval: 0 });
 
-                        for (let termNum of [1, 2]) {
-                            let fileName = termNum === 1 ? mapping.t1 : mapping.t2;
-                            if (!fileName) continue;
+                            rowsJson.forEach(row => {
+                                let seatKey = findColumnKey(row, ['جلوس', 'Seat']);
+                                let nameKey = findColumnKey(row, ['اسم', 'الاسم', 'Name']);
+                                let statusKey = findColumnKey(row, ['حالة', 'الحالة']);
+                                
+                                let finalTotalKey = findColumnKey(row, ['النهائي', 'النهائية', 'اجمالي', 'إجمالي', 'اجمالى', 'Total']);
+                                let yearWorkKey = findColumnKey(row, ['المجموع', 'مجموع', 'أعمال', 'اعمال', 'سنة', 'السنة', 'YW'], finalTotalKey ? [finalTotalKey] : []);
+                                let practicalKey = findColumnKey(row, ['عملي', 'شفوي', 'العملي', 'الشفهي']);
+                                let writtenKey = findColumnKey(row, ['تحريري', 'التحريري', 'الامتحان التحريري', 'كراسة']);
 
-                            try {
-                                let response = await fetch(fileName);
-                                if (!response.ok) {
-                                    console.warn(`الملف غير موجود أو حدث خطأ أثناء جلبه: ${fileName}`);
-                                    continue;
+                                let seatNo = seatKey ? String(row[seatKey]).trim() : '';
+                                let studentName = nameKey ? String(row[nameKey]).trim() : '';
+                                let studentStatus = statusKey ? String(row[statusKey]).trim() : 'باقي';
+                                
+                                let isPassedBefore = Object.values(row).some(v => String(v).includes('سبق نجاحه') || String(v).includes('سبق نجاحها'));
+
+                                let ywVal = yearWorkKey && row[yearWorkKey] !== undefined ? parseFloat(row[yearWorkKey]) || 0 : 0;
+                                let pracVal = practicalKey && row[practicalKey] !== undefined ? parseFloat(row[practicalKey]) || 0 : 0;
+                                
+                                let writStr = writtenKey ? String(row[writtenKey]).trim() : '';
+                                let isAbsent = writStr === 'غ' || writStr === 'غائب';
+                                let writVal = isAbsent ? 0 : (parseFloat(writStr) || 0);
+
+                                let totVal = ywVal + pracVal + writVal; 
+
+                                let maxYWVal = 0, maxPracVal = 0, maxWritVal = 0;
+                                if (yearWorkKey) { let m = yearWorkKey.match(/\(\s*(\d+)\s*\)/); maxYWVal = m ? parseFloat(m[1]) : 0; }
+                                if (practicalKey) { let m = practicalKey.match(/\(\s*(\d+)\s*\)/); maxPracVal = m ? parseFloat(m[1]) : 0; }
+                                if (writtenKey) { let m = writtenKey.match(/\(\s*(\d+)\s*\)/); maxWritVal = m ? parseFloat(m[1]) : 0; }
+                                let maxTotVal = maxYWVal + maxPracVal + maxWritVal;
+
+                                if (!seatNo && !studentName) return; 
+
+                                let primaryLookupKey = seatNo || studentName;
+                                let matchedRecordKey = Object.keys(studentsDatabase).find(k => 
+                                    (seatNo && studentsDatabase[k].seatNumber === seatNo) || 
+                                    (studentName && studentsDatabase[k].name === studentName)
+                                );
+
+                                if (matchedRecordKey) primaryLookupKey = matchedRecordKey;
+
+                                if (!studentsDatabase[primaryLookupKey]) {
+                                    studentsDatabase[primaryLookupKey] = {
+                                        seatNumber: seatNo, name: studentName, status: studentStatus, scores: {}, maxScores: {}, _gradesForStats: {}, _displayData: {}, _overallStatCategory: ''
+                                    };
+                                    defaultSubjects.forEach(sub => {
+                                        studentsDatabase[primaryLookupKey].scores[sub] = { 
+                                            t1: { yw: '-', prac: '-', writ: '-', maxTot: 0, maxWr: 0, maxYW: 0, maxPrac: 0, isAbsent: false }, 
+                                            t2: { yw: '-', prac: '-', writ: '-', maxTot: 0, maxWr: 0, maxYW: 0, maxPrac: 0, isAbsent: false }, 
+                                            total: { yw: 0, prac: 0, writ: 0, tot: 0 }, 
+                                            passedT1: false, passedT2: false, isAbsent: false, absentTerms: 0, totalTerms: 0 
+                                        };
+                                        studentsDatabase[primaryLookupKey].maxScores[sub] = { yearWork: 0, practical: 0, written: 0, finalTotal: 0 };
+                                        studentsDatabase[primaryLookupKey]._gradesForStats[sub] = 'غائب'; 
+                                    });
                                 }
-                                
-                                const fileBuffer = await response.arrayBuffer();
-                                hasProcessedAnyFile = true;
-                                processExcelData(fileBuffer, defSubject, termNum);
-                                
-                            } catch (fetchErr) {
-                                console.error(`خطأ أثناء معالجة الملف ${fileName}:`, fetchErr);
-                            }
-                        }
+
+                                if (seatNo && !studentsDatabase[primaryLookupKey].seatNumber) studentsDatabase[primaryLookupKey].seatNumber = seatNo;
+                                if (studentName && !studentsDatabase[primaryLookupKey].name) studentsDatabase[primaryLookupKey].name = studentName;
+                                if (studentStatus.includes("باق") || studentStatus.includes("باقي")) studentsDatabase[primaryLookupKey].status = "باقي";
+
+                                let subScores = studentsDatabase[primaryLookupKey].scores[defSubject];
+                                if (!subScores) return;
+
+                                if (isPassedBefore) {
+                                    if (termNum === 1) subScores.passedT1 = true;
+                                    else if (termNum === 2) subScores.passedT2 = true;
+                                }
+
+                                let isContinuous = dynamicContinuousSubjects.includes(defSubject);
+
+                                if (isContinuous) {
+                                    let tObj = termNum === 1 ? subScores.t1 : subScores.t2;
+                                    tObj.yw = yearWorkKey && row[yearWorkKey] !== undefined ? ywVal : '-';
+                                    tObj.prac = practicalKey && row[practicalKey] !== undefined ? pracVal : '-';
+                                    tObj.writ = isAbsent ? 'غ' : (writtenKey && row[writtenKey] !== undefined ? writVal : '-');
+                                    tObj.isAbsent = isAbsent;
+                                    tObj.maxTot = maxTotVal;
+                                    tObj.maxWr = maxWritVal;
+                                    tObj.maxYW = maxYWVal;
+                                    tObj.maxPrac = maxPracVal;
+
+                                    if(!isPassedBefore) {
+                                        subScores.totalTerms++;
+                                        if (isAbsent) subScores.absentTerms++;
+                                    }
+                                } else {
+                                    if(!isPassedBefore) {
+                                        subScores.total.yw = ywVal;
+                                        subScores.total.prac = pracVal;
+                                        subScores.total.writ = writVal;
+                                        subScores.total.tot = totVal;
+                                        subScores.isAbsent = isAbsent;
+
+                                        let mScores = studentsDatabase[primaryLookupKey].maxScores[defSubject];
+                                        if (mScores) {
+                                            mScores.yearWork = maxYWVal;
+                                            mScores.practical = maxPracVal;
+                                            mScores.written = maxWritVal;
+                                            mScores.finalTotal = maxTotVal;
+                                        }
+                                    }
+                                }
+                            });
+                        });
                     }
                 }
 
                 if (!hasProcessedAnyFile) { 
                     document.getElementById('loader').style.display = 'none';
-                    alert(mode === 'manual' ? "يرجى سحب الملفات إلى الخانات المخصصة في الجدول أولاً!" : "لم يتم العثور على ملفات Excel لقرائتها من السيرفر."); 
+                    alert("يرجى سحب الملفات إلى الخانات المخصصة في الجدول أولاً!"); 
                     return; 
                 }
 
@@ -1119,7 +1076,7 @@
             } catch (err) {
                 document.getElementById('loader').style.display = 'none';
                 console.error(err);
-                alert("حدث خطأ أثناء معالجة الكشوف: " + err.message);
+                alert("حدث خطأ أثناء معالجة الكشوف: " + err.message + "\nالرجاء التأكد من صحة هيكل ملفات الإكسل المرفوعة.");
             }
         }
 
@@ -1564,9 +1521,6 @@
             `;
 
             let subCounter = 1;
-            
-            let mode = document.querySelector('input[name="readMode"]:checked').value;
-
             checkedBoxes.forEach(chk => {
                 let subName = chk.value;
                 let actual = currentGrievanceStudent.scores[subName];
@@ -1578,18 +1532,8 @@
                 let t1myw='-', t1mpr='-', t1mwr='-', t2myw='-', t2mpr='-', t2mwr='-', totMax='-';
 
                 let subjectIdx = defaultSubjects.indexOf(subName);
-                
-                let t1HasFiles = false;
-                let t2HasFiles = false;
-
-                if (mode === 'manual') {
-                    t1HasFiles = document.querySelector(`.mapping-table td.drop-zone[data-subject-idx="${subjectIdx}"][data-term="1"] .file-chip`) !== null;
-                    t2HasFiles = document.querySelector(`.mapping-table td.drop-zone[data-subject-idx="${subjectIdx}"][data-term="2"] .file-chip`) !== null;
-                } else {
-                    let mapping = fileMapping[subName];
-                    t1HasFiles = mapping.t1 !== null;
-                    t2HasFiles = mapping.t2 !== null;
-                }
+                let t1HasFiles = document.querySelector(`.mapping-table td.drop-zone[data-subject-idx="${subjectIdx}"][data-term="1"] .file-chip`) !== null;
+                let t2HasFiles = document.querySelector(`.mapping-table td.drop-zone[data-subject-idx="${subjectIdx}"][data-term="2"] .file-chip`) !== null;
 
                 if(actual) {
                     totAct = actual.total.tot;
@@ -1917,6 +1861,7 @@
             document.getElementById('lblRepeaterGrace').innerText = '10%';
             document.getElementById('chkExcludeZeroWritten').checked = false;
             document.getElementById('passRateText').innerText = "نسبة النجاح: -- %";
+            document.getElementById('showHiddenBtn').style.display = 'none';
             document.querySelectorAll('.bulk-input').forEach(i => i.value = '');
             document.querySelectorAll('th input[type="checkbox"]').forEach(c => c.checked = true);
             document.querySelectorAll('.subject-input').forEach(i => { i.value = defaultSubjects[i.getAttribute('data-index')]; i.classList.remove('modified-text'); i.classList.add('default-text'); });
