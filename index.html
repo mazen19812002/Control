@@ -106,9 +106,14 @@
         .term-breakdown { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .t-row { font-size: 13px; color: #555; border-bottom: 1px dashed #ccc; width: 100%; padding: 3px 0; }
         .t-row.last { border-bottom: none; font-size: 16px; font-weight: 900; color: #000; margin-top: 3px; padding-top: 2px; }
-        .grace-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+        
+        /* تنسيقات الرأفة والرفع للتقدير */
+        .grace-wrapper, .upgrade-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
         .grace-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #f39c12; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
+        .upgrade-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #28a745; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
         .grace-original { font-size: 13px; text-decoration: line-through; color: #d32f2f; margin-top: 4px; font-weight: 900; opacity: 0.8;}
+        td.upgrade-cell { background-color: #d4edda !important; color: #155724 !important; }
+        
         .grade-excellent { color: #01579b; font-weight: 900; text-shadow: 0px 0px 1px rgba(1,87,155,0.2); }
         .grade-vgood { color: #0288d1; font-weight: 900; text-shadow: 0px 0px 1px rgba(2,136,209,0.2); }
         .grade-good { color: #00897b; font-weight: 900; text-shadow: 0px 0px 1px rgba(0,137,123,0.2); }
@@ -168,6 +173,8 @@
             td.total-cell { background-color: #e0f2f1 !important; }
             td.grace-cell { background-color: #ffe0b2 !important; }
             td.status-cell { background-color: #e3f2fd !important; }
+            td.upgrade-cell { background-color: #c8e6c9 !important; color: #000 !important; }
+            .upgrade-badge { background-color: #28a745 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
             .fail-highlight { border-color: #d32f2f; color: #d32f2f; box-shadow: none; background: transparent; padding: 1px 3px;}
             .grace-badge { background-color: #f57c00 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
             .grace-original { color: #000 !important; font-size: 10px !important;}
@@ -363,7 +370,7 @@
             <h2 style="color: #006064; text-align: center; border-bottom: 2px solid #b2ebf2; padding-bottom: 10px; margin-top:0;">⚙️ إعدادات الكنترول المتقدمة</h2>
             
             <div style="background: #e0f7fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="margin-top: 0; color: #00838f;">أولاً: إعدادات درجات الرأفة التلقائية</h3>
+                <h3 style="margin-top: 0; color: #00838f;">أولاً: إعدادات درجات الرأفة التلقائية (للراسبين)</h3>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 15px;">
                     <div class="grace-ctrl-group">
                         <span>رأفة المستجد:</span>
@@ -385,9 +392,8 @@
                 </label>
             </div>
 
-            <div style="background: #fff3e0; padding: 20px; border-radius: 10px;">
+            <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
                 <h3 style="margin-top: 0; color: #d35400;">ثانياً: إعدادات درجات رفع المقرر (المدخلة يدوياً عبر زر + بالجدول)</h3>
-                
                 <div style="margin-bottom: 15px;">
                     <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #4e342e;">تحديد مكان إضافة الدرجة في حالة (المقررات الممتدة):</label>
                     <select id="bulkTargetContinuous" class="search-input" style="border-color: #e67e22; padding: 10px; font-size: 16px;" onchange="triggerReRender()">
@@ -396,13 +402,31 @@
                         <option value="total">3- تضاف إلى المجموع الكلي للمقرر</option>
                     </select>
                 </div>
-
                 <div>
                     <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #4e342e;">تحديد مكان إضافة الدرجة في حالة (المقررات غير الممتدة):</label>
                     <select id="bulkTargetNormal" class="search-input" style="border-color: #e67e22; padding: 10px; font-size: 16px;" onchange="triggerReRender()">
                         <option value="writ" selected>1- تضاف إلى التحريري</option>
                         <option value="total">2- تضاف إلى المجموع</option>
                     </select>
+                </div>
+            </div>
+
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 10px;">
+                <h3 style="margin-top: 0; color: #2e7d32;">ثالثاً: إعدادات رفع التقدير (للناجحين للوصول للتقدير الأعلى مباشرة)</h3>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+                    <div class="grace-ctrl-group">
+                        <span>رفع مجموع المادة:</span>
+                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('subject', -1)">-</button>
+                        <span id="lblSubjectUpgrade" class="grace-disp-val" style="color:#2e7d32;">0%</span>
+                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('subject', 1)">+</button>
+                    </div>
+                    <div style="border-left: 2px solid #a5d6a7; height: 25px;"></div>
+                    <div class="grace-ctrl-group">
+                        <span>رفع المجموع الكلي:</span>
+                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('overall', -1)">-</button>
+                        <span id="lblOverallUpgrade" class="grace-disp-val" style="color:#2e7d32;">0%</span>
+                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('overall', 1)">+</button>
+                    </div>
                 </div>
             </div>
             
@@ -507,14 +531,12 @@
     <button class="floating-btn" onclick="toggleUIVisibility()">👁️</button>
 
     <script>
-        // دالة مساعدة لتوحيد عملية فرز الطلاب حسب رقم الجلوس تصاعدياً ثم بالاسم
         function sortStudents(a, b) {
             let numA = parseInt(a.seatNumber);
             let numB = parseInt(b.seatNumber);
             let hasNumA = !isNaN(numA);
             let hasNumB = !isNaN(numB);
 
-            // المقارنة برقم الجلوس بشكل أساسي إذا كان الرقم موجوداً
             if (hasNumA && hasNumB) {
                 if (numA !== numB) return numA - numB;
             } else if (hasNumA) {
@@ -523,7 +545,6 @@
                 return 1;
             }
 
-            // في حالة عدم توفر رقم جلوس، أو تساويه، نلجأ إلى حالة القيد والاسم كبديل
             let sA = a.status || ""; let sB = b.status || "";
             let isNewA = sA.includes("مستجد") ? 0 : 1; let isNewB = sB.includes("مستجد") ? 0 : 1;
             if (isNewA !== isNewB) return isNewA - isNewB;
@@ -563,7 +584,6 @@
                         const y = meta.data[index].y;
                         let val = parseFloat(datapoint) || 0;
                         if (val > 0) {
-                            // التبديل الصحيح للنص المكتوب فوق العمود (رقم صحيح أو نسبة مئوية)
                             let dispStr = chartShowPercentage ? (val.toFixed(1) + '%') : val.toString();
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'bottom';
@@ -584,7 +604,6 @@
         let hiddenCols = new Set(); 
         let chartInstance = null; 
 
-        // الترتيب والمواد الجديدة المحدثة بناءً على طلبك
         const defaultSubjects = ['رياضيات', 'فيزياء', 'ميكانيكا', 'الرسم الهندسي', 'حاسب', 'تكنولوجيا', 'كيمياء', 'انجليزي', 'تاريخ'];
         let mappedSubjects = [...defaultSubjects]; 
         
@@ -614,6 +633,8 @@
         let chartShowPercentage = false; 
         let freshmanGraceLimitPct = 6;
         let repeaterGraceLimitPct = 10;
+        let subjectUpgradeLimitPct = 0;
+        let overallUpgradeLimitPct = 0;
         
         let currentGrievanceStudent = null;
 
@@ -642,6 +663,17 @@
             } else {
                 repeaterGraceLimitPct = Math.max(0, repeaterGraceLimitPct + val);
                 document.getElementById('lblRepeaterGrace').innerText = repeaterGraceLimitPct + '%';
+            }
+            triggerReRender();
+        }
+
+        function changeUpgradeLimit(type, val) {
+            if (type === 'subject') {
+                subjectUpgradeLimitPct = Math.max(0, subjectUpgradeLimitPct + val);
+                document.getElementById('lblSubjectUpgrade').innerText = subjectUpgradeLimitPct + '%';
+            } else {
+                overallUpgradeLimitPct = Math.max(0, overallUpgradeLimitPct + val);
+                document.getElementById('lblOverallUpgrade').innerText = overallUpgradeLimitPct + '%';
             }
             triggerReRender();
         }
@@ -1062,7 +1094,6 @@
                             let t1Max = actual.t1.maxTot > 0 ? actual.t1.maxTot : fb.tot / 2;
                             let t2Max = actual.t2.maxTot > 0 ? actual.t2.maxTot : fb.tot / 2;
                             
-                            // حسابات خاصة للرسم الهندسي (تصفير تحريري الترم الأول)
                             let t1WrMax = actual.t1.maxWr > 0 ? actual.t1.maxWr : (sub === 'الرسم الهندسي' ? 0 : fb.wr / 2);
                             let t2WrMax = actual.t2.maxWr > 0 ? actual.t2.maxWr : (sub === 'الرسم الهندسي' ? fb.wr : fb.wr / 2);
                             
@@ -1192,7 +1223,6 @@
                         
                         let dispT1w = actual.t1?.isAbsent ? '<span style="color:#c62828;">غ</span>' : actual.t1?.writ;
                         
-                        // استثناء مادة الرسم الهندسي لتجاهل التحريري في الترم الأول
                         if (subject === 'الرسم الهندسي') {
                             dispT1w = '-';
                         }
@@ -1220,21 +1250,48 @@
                                     canApplyBulk = false;
                                 }
                             }
+                            
                             if (canApplyBulk) {
+                                let actualAdded = 0; 
+                                let spaceTotal = maxScore - finalScore; 
+                                if (spaceTotal < 0) spaceTotal = 0;
+                                
+                                let fbLocal = getSubjectFallbackMaxes(subject);
+
                                 if (isContinuous) {
+                                    let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
+                                    let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
+
                                     if (bulkSettingCont === 't1_writ' && !actual.t1?.isAbsent && !actual.passedT1) {
-                                        valT1W += bulkAdd; dispT1w = valT1W;
-                                        valTotW += bulkAdd; dispTotW = valTotW;
+                                        let space = t1WMax - valT1W; 
+                                        if (space > 0) {
+                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
+                                            valT1W += actualAdded; dispT1w = valT1W;
+                                            valTotW += actualAdded; dispTotW = valTotW;
+                                        }
                                     } else if (bulkSettingCont === 't2_writ' && !actual.t2?.isAbsent && !actual.passedT2) {
-                                        valT2W += bulkAdd; dispT2w = valT2W;
-                                        valTotW += bulkAdd; dispTotW = valTotW;
+                                        let space = t2WMax - valT2W;
+                                        if (space > 0) {
+                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
+                                            valT2W += actualAdded; dispT2w = valT2W;
+                                            valTotW += actualAdded; dispTotW = valTotW;
+                                        }
+                                    } else if (bulkSettingCont === 'total') {
+                                        actualAdded = Math.min(bulkAdd, spaceTotal);
                                     }
                                 } else {
                                     if (bulkSettingNormal === 'writ' && !currentIsAbsent) {
-                                        valTotW += bulkAdd; dispTotW = valTotW;
+                                        let space = currentMaxWrit - valTotW;
+                                        if (space > 0) {
+                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
+                                            valTotW += actualAdded; dispTotW = valTotW;
+                                        }
+                                    } else if (bulkSettingNormal === 'total') {
+                                        actualAdded = Math.min(bulkAdd, spaceTotal);
                                     }
                                 }
-                                finalScore += bulkAdd;
+                                
+                                finalScore += actualAdded;
                                 if (finalScore > maxScore) finalScore = maxScore; 
                             }
                         }
@@ -1264,7 +1321,7 @@
                             } else { tdTotal.textContent = '-'; }
                         } else if (maxScore > 0 || currentIsAbsent) {
                             let percentage = (finalScore / maxScore) * 100;
-                            let graceAdded = 0; let isFailing = false; let isBylawFailing = false;
+                            let graceAdded = 0; let upgradeAdded = 0; let isFailing = false; let isBylawFailing = false;
 
                             if (currentIsAbsent) { isBylawFailing = true; isFailing = true; } 
                             else if (currentMaxWrit > 0 && valTotW < (currentMaxWrit / 3)) { isBylawFailing = true; isFailing = true; }
@@ -1277,8 +1334,28 @@
                                 } else if (percentage < 50) { isFailing = true; }
                             }
 
+                            // ---------------- نظام الترقية / رفع المادة للناجحين ----------------
+                            if (!isBylawFailing && !isFailing && graceAdded === 0 && subjectUpgradeLimitPct > 0) {
+                                let nextThreshold = 0;
+                                if (percentage >= 50 && percentage < 65) nextThreshold = 65;
+                                else if (percentage >= 65 && percentage < 75) nextThreshold = 75;
+                                else if (percentage >= 75 && percentage < 85) nextThreshold = 85;
+
+                                if (nextThreshold > 0) {
+                                    let targetScore = Math.ceil((maxScore * nextThreshold) / 100);
+                                    let gap = targetScore - finalScore;
+                                    let allowedBoost = (maxScore * subjectUpgradeLimitPct) / 100;
+                                    
+                                    if (gap > 0 && gap <= (allowedBoost + 0.001)) {
+                                        upgradeAdded = gap;
+                                    }
+                                }
+                            }
+                            // ----------------------------------------------------------------------
+
                             studentTotalGraceMarks += graceAdded;
-                            studentGrandTotal += (finalScore + graceAdded); studentMaxGrandTotal += maxScore;
+                            studentGrandTotal += (finalScore + graceAdded + upgradeAdded); 
+                            studentMaxGrandTotal += maxScore;
 
                             let displayScore = finalScore;
                             let gradeInfo = getEgyptianGrade((finalScore / maxScore) * 100);
@@ -1312,6 +1389,20 @@
                                 displayGrade = raisedDisplayGrade;
                                 tdGrade.className = `subject-grade ${subCls} ${raisedGradeInfo.cssClass}`;
                                 internalStatsGrade = raisedGradeInfo.text; 
+                            } else if (upgradeAdded > 0) {
+                                // تطبيق ترقية التقدير بخلفية خضراء
+                                let raisedScore = finalScore + upgradeAdded;
+                                let raisedGradeInfo = getEgyptianGrade((raisedScore / maxScore) * 100);
+                                
+                                displayScore = `<div class="upgrade-wrapper"><span class="upgrade-badge">${raisedScore}</span><span class="grace-original">${finalScore}</span></div>`;
+                                
+                                let raisedDisplayGrade = raisedGradeInfo.symbol;
+                                if (evaluateHalf) raisedDisplayGrade += ` <span class="text-passed">(${passedStatusText})</span>`;
+                                displayGrade = raisedDisplayGrade;
+                                
+                                tdTotal.classList.add('upgrade-cell');
+                                tdGrade.className = `subject-grade ${subCls} upgrade-cell ${raisedGradeInfo.cssClass}`;
+                                internalStatsGrade = raisedGradeInfo.text;
                             } else {
                                 internalStatsGrade = gradeInfo.text;
                             }
@@ -1342,14 +1433,49 @@
                     let tdGrandTotalTotal = document.createElement('td'); let tdGrandTotalGrade = document.createElement('td');
                     tdGrandTotalTotal.className = 'total-cell'; tdGrandTotalGrade.className = 'total-cell';
                     let studentFinalGradeObj = null;
+                    let overallUpgradeAdded = 0;
 
                     if (studentGrandTotal > 0 || studentMaxGrandTotal > 0) {
-                        tdGrandTotalTotal.textContent = studentGrandTotal;
-                        if (studentMaxGrandTotal > 0) {
-                            studentFinalGradeObj = getEgyptianGrade((studentGrandTotal / studentMaxGrandTotal) * 100);
+                        let overallPct = (studentGrandTotal / studentMaxGrandTotal) * 100;
+                        let overallIsFailing = (failedCoreCount + failedHumCount > 0);
+                        
+                        // ---------------- نظام رفع التقدير العام للطالب ----------------
+                        if (!overallIsFailing && overallPct >= 50 && overallUpgradeLimitPct > 0) {
+                            let nextThreshold = 0;
+                            if (overallPct >= 50 && overallPct < 65) nextThreshold = 65;
+                            else if (overallPct >= 65 && overallPct < 75) nextThreshold = 75;
+                            else if (overallPct >= 75 && overallPct < 85) nextThreshold = 85;
+
+                            if (nextThreshold > 0) {
+                                let targetTotal = Math.ceil((studentMaxGrandTotal * nextThreshold) / 100);
+                                let gap = targetTotal - studentGrandTotal;
+                                let allowedBoost = (studentMaxGrandTotal * overallUpgradeLimitPct) / 100;
+                                
+                                if (gap > 0 && gap <= (allowedBoost + 0.001)) {
+                                    overallUpgradeAdded = gap;
+                                }
+                            }
+                        }
+
+                        if (overallUpgradeAdded > 0) {
+                            let newTotal = studentGrandTotal + overallUpgradeAdded;
+                            studentFinalGradeObj = getEgyptianGrade((newTotal / studentMaxGrandTotal) * 100);
+                            
+                            tdGrandTotalTotal.innerHTML = `<div class="upgrade-wrapper"><span class="upgrade-badge">${newTotal}</span><span class="grace-original">${studentGrandTotal}</span></div>`;
+                            tdGrandTotalTotal.classList.add('upgrade-cell');
+                            
                             tdGrandTotalGrade.textContent = studentFinalGradeObj.symbol; 
-                            tdGrandTotalGrade.classList.add(studentFinalGradeObj.cssClass);
-                        } else { tdGrandTotalGrade.textContent = '-'; }
+                            tdGrandTotalGrade.classList.add('upgrade-cell', studentFinalGradeObj.cssClass);
+                            
+                            studentGrandTotal = newTotal; 
+                        } else {
+                            tdGrandTotalTotal.textContent = studentGrandTotal;
+                            if (studentMaxGrandTotal > 0) {
+                                studentFinalGradeObj = getEgyptianGrade((studentGrandTotal / studentMaxGrandTotal) * 100);
+                                tdGrandTotalGrade.textContent = studentFinalGradeObj.symbol; 
+                                tdGrandTotalGrade.classList.add(studentFinalGradeObj.cssClass);
+                            } else { tdGrandTotalGrade.textContent = '-'; }
+                        }
                     } else {
                         tdGrandTotalTotal.textContent = '-'; tdGrandTotalGrade.textContent = '-';
                     }
@@ -1384,7 +1510,12 @@
                     }
 
                     if(student._displayData) {
-                        student._displayData.grandTotal = tdGrandTotalTotal.textContent;
+                        // للتأكد من أن الكارد تظهر بشكل مقروء
+                        if (overallUpgradeAdded > 0) {
+                            student._displayData.grandTotal = studentGrandTotal;
+                        } else {
+                            student._displayData.grandTotal = tdGrandTotalTotal.textContent;
+                        }
                         student._displayData.grandGrade = tdGrandTotalGrade.textContent; 
                         student._displayData.finalStatus = statusText;
                     }
@@ -1582,7 +1713,6 @@
                         t1yw = actual.t1.yw; t1pr = actual.t1.prac; t1wr = actual.t1.isAbsent ? 'غ' : actual.t1.writ;
                         t2yw = actual.t2.yw; t2pr = actual.t2.prac; t2wr = actual.t2.isAbsent ? 'غ' : actual.t2.writ;
                         
-                        // استثناء مادة الرسم الهندسي لتجاهل التحريري في الترم الأول
                         if (subName === 'الرسم الهندسي') {
                             t1wr = '-';
                         }
@@ -1898,8 +2028,11 @@
         function resetSystemData() {
             studentsDatabase = {}; currentRenderedData = []; bulkAdditions = {}; hiddenCols.clear(); updateDynamicStyles(); globalFilesStore = {};
             dynamicContinuousSubjects = []; chartShowPercentage = false; freshmanGraceLimitPct = 6; repeaterGraceLimitPct = 10;
+            subjectUpgradeLimitPct = 0; overallUpgradeLimitPct = 0;
             document.getElementById('lblFreshmanGrace').innerText = '6%';
             document.getElementById('lblRepeaterGrace').innerText = '10%';
+            document.getElementById('lblSubjectUpgrade').innerText = '0%';
+            document.getElementById('lblOverallUpgrade').innerText = '0%';
             document.getElementById('chkExcludeZeroWritten').checked = false;
             document.getElementById('passRateText').innerText = "نسبة النجاح: -- %";
             document.querySelectorAll('.bulk-input').forEach(i => i.value = '');
