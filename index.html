@@ -399,7 +399,8 @@
                     <select id="bulkTargetContinuous" class="search-input" style="border-color: #e67e22; padding: 10px; font-size: 16px;" onchange="triggerReRender()">
                         <option value="t1_writ">1- تضاف إلى التحريري (فصل أول)</option>
                         <option value="t2_writ" selected>2- تضاف إلى التحريري (فصل ثاني)</option>
-                        <option value="total">3- تضاف إلى المجموع الكلي للمقرر</option>
+                        <option value="split_writ">3- تقسم على التحريري (للفصلين)</option>
+                        <option value="total">4- تضاف إلى المجموع الكلي للمقرر</option>
                     </select>
                 </div>
                 <div>
@@ -1274,6 +1275,25 @@
                                         if (space > 0) {
                                             actualAdded = Math.min(bulkAdd, space, spaceTotal);
                                             valT2W += actualAdded; dispT2w = valT2W;
+                                            valTotW += actualAdded; dispTotW = valTotW;
+                                        }
+                                    } else if (bulkSettingCont === 'split_writ') {
+                                        let t1Space = (!actual.t1?.isAbsent && !actual.passedT1) ? Math.max(0, t1WMax - valT1W) : 0;
+                                        let t2Space = (!actual.t2?.isAbsent && !actual.passedT2) ? Math.max(0, t2WMax - valT2W) : 0;
+                                        
+                                        let totalSpace = t1Space + t2Space;
+                                        let amountToAdd = Math.min(bulkAdd, totalSpace, spaceTotal);
+                                        
+                                        if (amountToAdd > 0) {
+                                            let addT1 = Math.min(amountToAdd / 2, t1Space);
+                                            let addT2 = Math.min(amountToAdd / 2, t2Space);
+                                            
+                                            if (addT1 < amountToAdd / 2) addT2 = Math.min(amountToAdd - addT1, t2Space);
+                                            if (addT2 < amountToAdd / 2) addT1 = Math.min(amountToAdd - addT2, t1Space);
+                                            
+                                            actualAdded = addT1 + addT2;
+                                            valT1W += addT1; dispT1w = valT1W;
+                                            valT2W += addT2; dispT2w = valT2W;
                                             valTotW += actualAdded; dispTotW = valTotW;
                                         }
                                     } else if (bulkSettingCont === 'total') {
