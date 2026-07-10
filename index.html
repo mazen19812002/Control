@@ -436,7 +436,7 @@
         </div>
     </div>
 
-    <!-- نافذة الإحصائيات المنبثقة -->
+    <!-- نافذة الإحصائيات المنبثقة المحدثة -->
     <div id="statsModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeStatsModal()">&times;</span>
@@ -1330,7 +1330,6 @@
                                 if (percentage >= (50 - activeGraceLimitPct) && percentage < 50) {
                                     let raisedScore = Math.ceil(maxScore * 0.50); 
                                     graceAdded = raisedScore - finalScore;
-                                    if(graceAdded > 0) studentGraceSubjectsCount++; 
                                 } else if (percentage < 50) { isFailing = true; }
                             }
 
@@ -1353,7 +1352,8 @@
                             }
                             // ----------------------------------------------------------------------
 
-                            studentTotalGraceMarks += graceAdded;
+                            if (graceAdded > 0 || upgradeAdded > 0) studentGraceSubjectsCount++;
+                            studentTotalGraceMarks += (graceAdded + upgradeAdded);
                             studentGrandTotal += (finalScore + graceAdded + upgradeAdded); 
                             studentMaxGrandTotal += maxScore;
 
@@ -1390,7 +1390,6 @@
                                 tdGrade.className = `subject-grade ${subCls} ${raisedGradeInfo.cssClass}`;
                                 internalStatsGrade = raisedGradeInfo.text; 
                             } else if (upgradeAdded > 0) {
-                                // تطبيق ترقية التقدير بخلفية خضراء
                                 let raisedScore = finalScore + upgradeAdded;
                                 let raisedGradeInfo = getEgyptianGrade((raisedScore / maxScore) * 100);
                                 
@@ -1468,6 +1467,7 @@
                             tdGrandTotalGrade.classList.add('upgrade-cell', studentFinalGradeObj.cssClass);
                             
                             studentGrandTotal = newTotal; 
+                            studentTotalGraceMarks += overallUpgradeAdded;
                         } else {
                             tdGrandTotalTotal.textContent = studentGrandTotal;
                             if (studentMaxGrandTotal > 0) {
@@ -1510,7 +1510,6 @@
                     }
 
                     if(student._displayData) {
-                        // للتأكد من أن الكارد تظهر بشكل مقروء
                         if (overallUpgradeAdded > 0) {
                             student._displayData.grandTotal = studentGrandTotal;
                         } else {
@@ -1526,7 +1525,16 @@
 
                     let tdGrace = document.createElement('td'); tdGrace.className = 'grace-cell';
                     if (studentTotalGraceMarks > 0) {
-                        let graceCountText = studentGraceSubjectsCount === 1 ? '(في مادة)' : (studentGraceSubjectsCount === 2 ? '(في مادتين)' : `(في ${studentGraceSubjectsCount} مواد)`);
+                        let graceCountText = '';
+                        if (studentGraceSubjectsCount === 1) graceCountText = '(في مادة)';
+                        else if (studentGraceSubjectsCount === 2) graceCountText = '(في مادتين)';
+                        else if (studentGraceSubjectsCount > 2) graceCountText = `(في ${studentGraceSubjectsCount} مواد)`;
+                        
+                        if (overallUpgradeAdded > 0) {
+                            if (graceCountText !== '') graceCountText = graceCountText.replace(')', ' + المجموع)');
+                            else graceCountText = '(للمجموع)';
+                        }
+
                         tdGrace.innerHTML = `<div class="grace-wrapper"><span>${studentTotalGraceMarks}</span><span style="font-size:11px; color:#555;">${graceCountText}</span></div>`;
                     } else { tdGrace.textContent = '0'; }
                     tr.appendChild(tdGrace);
