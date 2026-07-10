@@ -417,7 +417,7 @@
                     <div class="grace-ctrl-group">
                         <span>رفع مجموع المادة:</span>
                         <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('subject', -1)">-</button>
-                        <span id="lblSubjectUpgrade" class="grace-disp-val" style="color:#2e7d32;">0%</span>
+                        <span id="lblSubjectUpgrade" class="grace-disp-val" style="color:#2e7d32;">1%</span>
                         <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('subject', 1)">+</button>
                     </div>
                     <div style="border-left: 2px solid #a5d6a7; height: 25px;"></div>
@@ -633,7 +633,7 @@
         let chartShowPercentage = false; 
         let freshmanGraceLimitPct = 6;
         let repeaterGraceLimitPct = 10;
-        let subjectUpgradeLimitPct = 0;
+        let subjectUpgradeLimitPct = 1;
         let overallUpgradeLimitPct = 0;
         
         let currentGrievanceStudent = null;
@@ -1333,7 +1333,6 @@
                                 } else if (percentage < 50) { isFailing = true; }
                             }
 
-                            // ---------------- نظام الترقية / رفع المادة للناجحين ----------------
                             if (!isBylawFailing && !isFailing && graceAdded === 0 && subjectUpgradeLimitPct > 0) {
                                 let nextThreshold = 0;
                                 if (percentage >= 50 && percentage < 65) nextThreshold = 65;
@@ -1350,7 +1349,6 @@
                                     }
                                 }
                             }
-                            // ----------------------------------------------------------------------
 
                             if (graceAdded > 0 || upgradeAdded > 0) studentGraceSubjectsCount++;
                             studentTotalGraceMarks += (graceAdded + upgradeAdded);
@@ -1438,7 +1436,6 @@
                         let overallPct = (studentGrandTotal / studentMaxGrandTotal) * 100;
                         let overallIsFailing = (failedCoreCount + failedHumCount > 0);
                         
-                        // ---------------- نظام رفع التقدير العام للطالب ----------------
                         if (!overallIsFailing && overallPct >= 50 && overallUpgradeLimitPct > 0) {
                             let nextThreshold = 0;
                             if (overallPct >= 50 && overallPct < 65) nextThreshold = 65;
@@ -2036,10 +2033,10 @@
         function resetSystemData() {
             studentsDatabase = {}; currentRenderedData = []; bulkAdditions = {}; hiddenCols.clear(); updateDynamicStyles(); globalFilesStore = {};
             dynamicContinuousSubjects = []; chartShowPercentage = false; freshmanGraceLimitPct = 6; repeaterGraceLimitPct = 10;
-            subjectUpgradeLimitPct = 0; overallUpgradeLimitPct = 0;
+            subjectUpgradeLimitPct = 1; overallUpgradeLimitPct = 0;
             document.getElementById('lblFreshmanGrace').innerText = '6%';
             document.getElementById('lblRepeaterGrace').innerText = '10%';
-            document.getElementById('lblSubjectUpgrade').innerText = '0%';
+            document.getElementById('lblSubjectUpgrade').innerText = '1%';
             document.getElementById('lblOverallUpgrade').innerText = '0%';
             document.getElementById('chkExcludeZeroWritten').checked = false;
             document.getElementById('passRateText').innerText = "نسبة النجاح: -- %";
