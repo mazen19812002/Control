@@ -128,8 +128,7 @@
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #e0f7fa; padding: 10px 20px; border-radius: 10px;}
         .chart-nav-btn { background: #00838f; color: white; border: none; padding: 8px 20px; font-size: 20px; border-radius: 10px; cursor: pointer; transition: 0.2s;}
         .chart-nav-btn:hover { background: #00bcd4; transform: scale(1.05); }
-        .chart-title { font-size: 24px; font-weight: bold; color: #004d40; margin: 0; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; padding: 5px 15px; border-radius: 8px; transition: 0.3s;}
-        .chart-title:hover { background: rgba(0, 188, 212, 0.2); }
+        .chart-title { font-size: 24px; font-weight: bold; color: #004d40; margin: 0; padding: 5px 15px; border-radius: 8px;}
         .stats-controls { margin-bottom: 15px; display: flex; justify-content: center; gap: 20px; font-size: 16px; font-weight: bold; flex-wrap: wrap; align-items: center;}
         .pass-rate-text { font-size: 20px; font-weight: 900; color: #fff; background: #00838f; padding: 8px 20px; border-radius: 8px; }
         .custom-dropdown-menu { position: absolute; top: 100%; left: 0; right: 0; background: rgba(255, 255, 255, 0.98); border: 2px solid #00b4db; border-top: none; border-radius: 0 0 12px 12px; max-height: 280px; overflow-y: auto; z-index: 2000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: right;}
@@ -413,17 +412,20 @@
         </div>
     </div>
 
-    <!-- نافذة الإحصائيات المنبثقة -->
+    <!-- نافذة الإحصائيات المنبثقة المحدثة -->
     <div id="statsModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeStatsModal()">&times;</span>
             <div class="chart-header">
                 <button class="chart-nav-btn" onclick="changeChartIndex(-1)">➡️ السابق</button>
-                <h2 class="chart-title" id="chartTitle" onclick="toggleChartMode()" title="اضغط هنا للتبديل الفوري بين الأعداد والنسب المئوية">النتيجة الإجمالية للدفعة</h2>
+                <h2 class="chart-title" id="chartTitle">النتيجة الإجمالية للدفعة</h2>
                 <button class="chart-nav-btn" onclick="changeChartIndex(1)">التالي ⬅️</button>
             </div>
             
             <div class="stats-controls">
+                <label style="cursor:pointer; background: #e0f7fa; padding: 4px 8px; border-radius: 6px;"><input type="checkbox" id="chkShowPercentage" onchange="toggleChartModeCheckbox(this.checked)"> عرض النسب المئوية %</label>
+                <label style="cursor:pointer; background: #fff3e0; padding: 4px 8px; border-radius: 6px; color:#d35400;"><input type="checkbox" id="chkIncludeTransferred" onchange="updateChartDisplay()"> احتساب (منقول بمواد) كناجح</label>
+                
                 <label style="cursor:pointer;"><input type="checkbox" id="chkAbsents" checked onchange="updateChartDisplay()"> تضمين الغائبين</label>
                 <label style="cursor:pointer;"><input type="checkbox" id="chkPassedBefore" checked onchange="updateChartDisplay()"> تضمين (سبق نجاحه)</label>
                 <div class="pass-rate-text" id="passRateText">نسبة النجاح: -- %</div>
@@ -554,21 +556,20 @@
                 const { ctx, data } = chart;
                 ctx.save();
                 const meta = chart.getDatasetMeta(0);
-                let total = 0;
-                data.datasets[0].data.forEach(val => total += parseFloat(val) || 0);
 
                 data.datasets[0].data.forEach((datapoint, index) => {
                     if (meta.data[index]) {
                         const x = meta.data[index].x;
                         const y = meta.data[index].y;
                         let val = parseFloat(datapoint) || 0;
-                        if (val > 0 && total > 0) {
-                            let pctStr = chartShowPercentage ? (val.toFixed(1) + '%') : (((val / total) * 100).toFixed(1) + '%');
+                        if (val > 0) {
+                            // التبديل الصحيح للنص المكتوب فوق العمود (رقم صحيح أو نسبة مئوية)
+                            let dispStr = chartShowPercentage ? (val.toFixed(1) + '%') : val.toString();
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'bottom';
                             ctx.fillStyle = '#b71c1c'; 
-                            ctx.font = 'bold 15px Tahoma';
-                            ctx.fillText(pctStr, x, y - 5);
+                            ctx.font = 'bold 16px Tahoma';
+                            ctx.fillText(dispStr, x, y - 5);
                         }
                     }
                 });
@@ -614,6 +615,11 @@
         let repeaterGraceLimitPct = 10;
         
         let currentGrievanceStudent = null;
+
+        function toggleChartModeCheckbox(isChecked) {
+            chartShowPercentage = isChecked;
+            updateChartDisplay();
+        }
 
         function toggleReadMode() {
             let mode = document.querySelector('input[name="readMode"]:checked').value;
@@ -1176,7 +1182,6 @@
                             tr.appendChild(tdPrac);
                         }
                         
-                        // Setup values for calculations
                         let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
                         let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
                         let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
@@ -1393,12 +1398,6 @@
             }
         }
 
-        // ------------------ نظام الإحصائيات (Bar Charts) ------------------
-        function toggleChartMode() {
-            chartShowPercentage = !chartShowPercentage;
-            updateChartDisplay();
-        }
-
         function openStatsModal() {
             if(currentRenderedData.length === 0) { alert("يرجى معالجة الكشوف أولاً."); return; }
             document.getElementById('statsModal').style.display = 'block';
@@ -1418,6 +1417,7 @@
         function updateChartDisplay() {
             const includeAbsents = document.getElementById('chkAbsents').checked;
             const includePassedBefore = document.getElementById('chkPassedBefore').checked;
+            const includeTransferred = document.getElementById('chkIncludeTransferred') ? document.getElementById('chkIncludeTransferred').checked : false;
             
             const currentSubjectName = chartSubjectsList[currentChartIndex];
             document.getElementById('chartTitle').innerText = currentSubjectName === 'المجموع الكلي' ? 'النتيجة الإجمالية للدفعة' : `مادة: ${currentSubjectName}`;
@@ -1449,8 +1449,13 @@
                 if (counts[grade] !== undefined) counts[grade]++;
 
                 totalValidStudents++;
+                
                 if (isOverall) {
-                    if (['امتياز', 'جيد جداً', 'جيد', 'مقبول', 'سبق نجاحه'].includes(grade)) totalPassedStudents++;
+                    let passedCategories = ['امتياز', 'جيد جداً', 'جيد', 'مقبول', 'سبق نجاحه'];
+                    if (includeTransferred) {
+                        passedCategories.push('منقول بمادة', 'منقول بمادتين', 'منقول بمادتين + مادة انسانية');
+                    }
+                    if (passedCategories.includes(grade)) totalPassedStudents++;
                 } else {
                     if (['امتياز', 'جيد جداً', 'جيد', 'مقبول', 'سبق نجاحه'].includes(grade)) totalPassedStudents++;
                 }
@@ -1488,7 +1493,6 @@
             });
         }
 
-        // ------------------ نظام التظلمات (Grievances) ------------------
         function openGrievanceModal() {
             if(currentRenderedData.length === 0) { alert("يرجى معالجة الكشوف أولاً."); return; }
             document.getElementById('grievanceModal').style.display = 'block';
@@ -1662,7 +1666,6 @@
             }, 500);
         }
 
-        // ------------------ نظام الاستعلام التفصيلي المتقدم ------------------
         function loadStudentIntoModal(index, type) {
             let student = currentRenderedData[index];
             if(!student) return;
