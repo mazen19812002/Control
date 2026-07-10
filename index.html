@@ -412,7 +412,7 @@
         </div>
     </div>
 
-    <!-- نافذة الإحصائيات المنبثقة المحدثة -->
+    <!-- نافذة الإحصائيات المنبثقة -->
     <div id="statsModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeStatsModal()">&times;</span>
@@ -584,19 +584,20 @@
         let hiddenCols = new Set(); 
         let chartInstance = null; 
 
-        const defaultSubjects = ['رياضيات', 'ميكانيكا', 'فيزياء', 'تكنولوجيا', 'حاسب', 'كيمياء', 'تاريخ', 'انجليزي', 'رسم'];
+        // الترتيب والمواد الجديدة المحدثة بناءً على طلبك
+        const defaultSubjects = ['رياضيات', 'فيزياء', 'ميكانيكا', 'الرسم الهندسي', 'حاسب', 'تكنولوجيا', 'كيمياء', 'انجليزي', 'تاريخ'];
         let mappedSubjects = [...defaultSubjects]; 
         
         const fileMapping = {
             'رياضيات': { t1: 'رياضيات ترم اول.xlsx', t2: 'رياضيات ترم ثاني.xlsx' },
-            'ميكانيكا': { t1: 'ميكانيكا ترم اول.xlsx', t2: 'ميكانيكا ترم ثاني.xlsx' },
             'فيزياء': { t1: 'فيزياء ترم اول.xlsx', t2: 'فيزياء ترم ثاني.xlsx' },
-            'تكنولوجيا': { t1: 'تكنولوجيا ترم اول.xlsx', t2: null },
+            'ميكانيكا': { t1: 'ميكانيكا ترم اول.xlsx', t2: 'ميكانيكا ترم ثاني.xlsx' },
+            'الرسم الهندسي': { t1: 'رسم ترم اول.xlsx', t2: 'رسم ترم ثاني.xlsx' },
             'حاسب': { t1: 'حاسب ترم اول.xlsx', t2: null },
+            'تكنولوجيا': { t1: 'تكنولوجيا ترم اول.xlsx', t2: null },
             'كيمياء': { t1: null, t2: 'كيمياء ترم ثاني.xlsx' },
-            'تاريخ': { t1: null, t2: 'تاريخ ترم ثاني.xlsx' },
             'انجليزي': { t1: null, t2: 'انجليزي ترم ثاني.xlsx' },
-            'رسم': { t1: 'رسم ترم اول.xlsx', t2: 'رسم ترم ثاني.xlsx' }
+            'تاريخ': { t1: null, t2: 'تاريخ ترم ثاني.xlsx' }
         };
 
         let dynamicContinuousSubjects = []; 
@@ -729,9 +730,9 @@
 
         function getSubjectCssClass(defaultSubName) {
             const map = {
-                'رياضيات': 'col-math', 'ميكانيكا': 'col-mech', 'فيزياء': 'col-phys',
-                'تكنولوجيا': 'col-tech', 'حاسب': 'col-comp', 'كيمياء': 'col-chem',
-                'تاريخ': 'col-hist', 'انجليزي': 'col-eng', 'رسم': 'col-art'
+                'رياضيات': 'col-math', 'فيزياء': 'col-phys', 'ميكانيكا': 'col-mech', 
+                'الرسم الهندسي': 'col-art', 'حاسب': 'col-comp', 'تكنولوجيا': 'col-tech', 
+                'كيمياء': 'col-chem', 'انجليزي': 'col-eng', 'تاريخ': 'col-hist'
             };
             return map[defaultSubName] || '';
         }
@@ -743,7 +744,7 @@
             if(subName === 'تكنولوجيا' || subName === 'حاسب' || subName === 'كيمياء') return { yw: 20, pr: 20, wr: 60, tot: 100 };
             if(subName === 'تاريخ') return { yw: 10, pr: 0, wr: 40, tot: 50 };
             if(subName === 'انجليزي') return { yw: 15, pr: 0, wr: 35, tot: 50 };
-            if(subName === 'رسم') return { yw: 100, pr: 0, wr: 200, tot: 300 };
+            if(subName === 'الرسم الهندسي') return { yw: 100, pr: 0, wr: 200, tot: 300 };
             return { yw: 0, pr: 0, wr: 0, tot: 100 };
         }
 
@@ -1060,8 +1061,11 @@
                             let fb = getSubjectFallbackMaxes(sub);
                             let t1Max = actual.t1.maxTot > 0 ? actual.t1.maxTot : fb.tot / 2;
                             let t2Max = actual.t2.maxTot > 0 ? actual.t2.maxTot : fb.tot / 2;
-                            let t1WrMax = actual.t1.maxWr > 0 ? actual.t1.maxWr : fb.wr / 2;
-                            let t2WrMax = actual.t2.maxWr > 0 ? actual.t2.maxWr : fb.wr / 2;
+                            
+                            // حسابات خاصة للرسم الهندسي (تصفير تحريري الترم الأول)
+                            let t1WrMax = actual.t1.maxWr > 0 ? actual.t1.maxWr : (sub === 'الرسم الهندسي' ? 0 : fb.wr / 2);
+                            let t2WrMax = actual.t2.maxWr > 0 ? actual.t2.maxWr : (sub === 'الرسم الهندسي' ? fb.wr : fb.wr / 2);
+                            
                             let t1YwMax = actual.t1.maxYW > 0 ? actual.t1.maxYW : fb.yw / 2;
                             let t2YwMax = actual.t2.maxYW > 0 ? actual.t2.maxYW : fb.yw / 2;
                             let t1PrMax = actual.t1.maxPrac > 0 ? actual.t1.maxPrac : fb.pr / 2;
@@ -1187,6 +1191,12 @@
                         let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
                         
                         let dispT1w = actual.t1?.isAbsent ? '<span style="color:#c62828;">غ</span>' : actual.t1?.writ;
+                        
+                        // استثناء مادة الرسم الهندسي لتجاهل التحريري في الترم الأول
+                        if (subject === 'الرسم الهندسي') {
+                            dispT1w = '-';
+                        }
+                        
                         let dispT2w = actual.t2?.isAbsent ? '<span style="color:#c62828;">غ</span>' : actual.t2?.writ;
                         let dispTotW = currentIsAbsent ? '<span style="color:#c62828;">غ</span>' : actual.total?.writ;
 
@@ -1571,9 +1581,14 @@
                     if(isCont) {
                         t1yw = actual.t1.yw; t1pr = actual.t1.prac; t1wr = actual.t1.isAbsent ? 'غ' : actual.t1.writ;
                         t2yw = actual.t2.yw; t2pr = actual.t2.prac; t2wr = actual.t2.isAbsent ? 'غ' : actual.t2.writ;
+                        
+                        // استثناء مادة الرسم الهندسي لتجاهل التحريري في الترم الأول
+                        if (subName === 'الرسم الهندسي') {
+                            t1wr = '-';
+                        }
 
-                        t1myw = actual.t1.maxYW || (fb.yw/2); t1mpr = actual.t1.maxPrac || (fb.pr/2); t1mwr = actual.t1.maxWr || (fb.wr/2);
-                        t2myw = actual.t2.maxYW || (fb.yw/2); t2mpr = actual.t2.maxPrac || (fb.pr/2); t2mwr = actual.t2.maxWr || (fb.wr/2);
+                        t1myw = actual.t1.maxYW || (fb.yw/2); t1mpr = actual.t1.maxPrac || (fb.pr/2); t1mwr = actual.t1.maxWr || (subName === 'الرسم الهندسي' ? 0 : fb.wr/2);
+                        t2myw = actual.t2.maxYW || (fb.yw/2); t2mpr = actual.t2.maxPrac || (fb.pr/2); t2mwr = actual.t2.maxWr || (subName === 'الرسم الهندسي' ? fb.wr : fb.wr/2);
                         totMax = (currentGrievanceStudent.maxScores[subName]?.finalTotal) || fb.tot;
                     } else {
                         let mScores = currentGrievanceStudent.maxScores[subName];
