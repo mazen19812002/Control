@@ -1128,6 +1128,7 @@
 
                     let activeGraceLimitPct = statStr.includes("مستجد") ? regGracePct : repGracePct;
 
+                    // --- START PRE-PASS: Simulated Grace Marks Check ---
                     let initialCoreFails = 0, initialHumFails = 0;
                     let simCoreFails = 0, simHumFails = 0;
 
@@ -1148,7 +1149,7 @@
                             if (actual.passedT1 || actual.passedT2) passedStatusText = 'سبق نجاحه';
                         }
 
-                        if (passedStatusText && !evaluateHalf) return; 
+                        if (passedStatusText && !evaluateHalf) return; // الطالب ناجح مسبقاً
 
                         let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
                         let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
@@ -1221,7 +1222,8 @@
                         let percentage = (finalScore / maxScore) * 100;
                         let isHum = humanitiesSubjectsKeys.includes(subject);
                         let isAbsentFail = currentIsAbsent;
-                        let isBylawFail = (currentMaxWrit > 0 && valTotW < (currentMaxWrit / 3));
+                        // القاعدة الجامعية الصحيحة لرسوب اللائحة: التحريري أقل من 30%
+                        let isBylawFail = (currentMaxWrit > 0 && valTotW < (currentMaxWrit * 0.30));
 
                         if (isAbsentFail || isBylawFail || percentage < 50) {
                             if (isHum) initialHumFails++; else initialCoreFails++;
@@ -1250,12 +1252,15 @@
                     let initiallyRasib = isStatusFailing(initialCoreFails, initialHumFails);
                     let simRasib = isStatusFailing(simCoreFails, simHumFails);
 
+                    // منع الرأفة للراسب في 5 مواد فأكثر
                     if (totalInitialFails > 4) {
                         activeGraceLimitPct = 0; 
                     } 
+                    // منع الرأفة للراسب الذي لن تغير الرأفة من حالته (سيبقى راسباً في 3 أو 4 مواد)
                     else if (initiallyRasib && simRasib) {
                         activeGraceLimitPct = 0; 
                     }
+                    // --- END PRE-PASS ---
 
                     defaultSubjects.forEach(subject => {
                         let actual = student?.scores?.[subject] || {}; 
@@ -1409,8 +1414,9 @@
                             let percentage = (finalScore / maxScore) * 100;
                             let graceAdded = 0; let upgradeAdded = 0; let isFailing = false; let isBylawFailing = false;
 
+                            // رسوب اللائحة: غياب، أو درجة التحريري أقل من 30% 
                             if (currentIsAbsent) { isBylawFailing = true; isFailing = true; } 
-                            else if (currentMaxWrit > 0 && valTotW < (currentMaxWrit / 3)) { isBylawFailing = true; isFailing = true; }
+                            else if (currentMaxWrit > 0 && valTotW < (currentMaxWrit * 0.30)) { isBylawFailing = true; isFailing = true; }
 
                             if (!isBylawFailing) {
                                 if (percentage >= (50 - activeGraceLimitPct) && percentage < 50) {
@@ -1426,7 +1432,7 @@
                                 else if (percentage >= 75 && percentage < 85) nextThreshold = 85;
 
                                 if (nextThreshold > 0) {
-                                    // التعديل هنا: إذا كانت النهاية العظمى 50 فلا تجبر الكسر (تُسمح بالأنصاف 42.5 للوصول للتقدير)
+                                    // تطبيق الكسر للتقدير الأعلى للمواد من 50 درجة
                                     let targetScore = (maxScore === 50) ? ((maxScore * nextThreshold) / 100) : Math.ceil((maxScore * nextThreshold) / 100);
                                     let gap = targetScore - finalScore;
                                     let allowedBoost = (maxScore * subjectUpgradeLimitPct) / 100;
