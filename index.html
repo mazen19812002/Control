@@ -24,7 +24,7 @@
             background: var(--bg-gradient); color: var(--text-color); min-height: 100vh;
             display: flex; flex-direction: column; overflow-x: hidden; transition: transform 0.3s ease;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-            padding-bottom: 35px; /* Space for footer */
+            padding-bottom: 35px;
         }
         #loader {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -152,7 +152,6 @@
         .floating-btn:hover { transform: scale(1.15) rotate(180deg); }
         .hidden-ui .top-controls, .hidden-ui .custom-footer { opacity: 0; pointer-events: none; }
 
-        /* Dr. Mazen Badawy Animated Footer */
         .custom-footer {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: var(--footer-gradient);
@@ -201,72 +200,20 @@
             .print-legend { font-size: 12px !important; font-weight: bold; text-align: center; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 6px 0; margin-bottom: 20px; color: #000; }
             .print-signatures { display: flex !important; justify-content: space-between !important; font-size: 14px !important; font-weight: bold !important; color: #000 !important; padding: 0 20px;}
             .grade-excellent, .grade-vgood, .grade-good, .grade-pass, .grade-weak, .grade-vweak, .grade-bylaw {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
-            body.printing-modal, body.printing-grievance {
-                background: white !important;
-                height: auto !important;
-                overflow: visible !important;
-                display: block !important;
-            }
-            body.printing-modal > *:not(#studentDetailModal),
-            body.printing-grievance > *:not(#grievanceModal) {
-                display: none !important;
-            }
-            body.printing-modal #studentDetailModal,
-            body.printing-grievance #grievanceModal {
-                display: block !important;
-                position: relative !important;
-                left: auto; top: auto;
-                width: 100% !important;
-                height: auto !important;
-                overflow: visible !important;
-                background: white !important;
-            }
-            body.printing-modal .modal-content,
-            body.printing-grievance .modal-content {
-                position: relative !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                overflow: visible !important;
-            }
-            body.printing-modal .close-btn, body.printing-modal .search-input, body.printing-modal #btnPrintStudent, body.printing-modal .cert-display-options,
-            body.printing-grievance .close-btn, body.printing-grievance .search-input, body.printing-grievance .grievance-subjects-container, body.printing-grievance button { 
-                display: none !important; 
-            }
-            body.printing-modal h2, body.printing-grievance h2 {
-                margin-top: 0 !important;
-                color: #000 !important;
-            }
-            .student-cert-table, .grievance-table {
-                width: 100% !important;
-                page-break-inside: auto !important;
-                border-collapse: collapse !important;
-            }
-            .student-cert-table tr {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            .grievance-table {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            body.printing-modal .student-cert-table th, body.printing-modal .student-cert-table td { 
-                font-size: 15px !important; color: #000 !important; padding: 8px !important;
-            }
-            body.printing-grievance .grievance-table {
-                margin-bottom: 25px !important;
-            }
-            body.printing-grievance .grievance-table th, body.printing-grievance .grievance-table td { 
-                border: 2px solid #000 !important; background: transparent !important;
-                color: #000 !important; font-family: Arial, sans-serif !important;
-                font-size: 14px !important; padding: 5px !important;
-            }
+            body.printing-modal, body.printing-grievance { background: white !important; height: auto !important; overflow: visible !important; display: block !important; }
+            body.printing-modal > *:not(#studentDetailModal), body.printing-grievance > *:not(#grievanceModal) { display: none !important; }
+            body.printing-modal #studentDetailModal, body.printing-grievance #grievanceModal { display: block !important; position: relative !important; left: auto; top: auto; width: 100% !important; height: auto !important; overflow: visible !important; background: white !important; }
+            body.printing-modal .modal-content, body.printing-grievance .modal-content { position: relative !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; overflow: visible !important; }
+            body.printing-modal .close-btn, body.printing-modal .search-input, body.printing-modal #btnPrintStudent, body.printing-modal .cert-display-options, body.printing-grievance .close-btn, body.printing-grievance .search-input, body.printing-grievance .grievance-subjects-container, body.printing-grievance button { display: none !important; }
+            body.printing-modal h2, body.printing-grievance h2 { margin-top: 0 !important; color: #000 !important; }
+            .student-cert-table, .grievance-table { width: 100% !important; page-break-inside: auto !important; border-collapse: collapse !important; }
+            .student-cert-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+            .grievance-table { page-break-inside: avoid !important; break-inside: avoid !important; }
+            body.printing-modal .student-cert-table th, body.printing-modal .student-cert-table td { font-size: 15px !important; color: #000 !important; padding: 8px !important; }
+            body.printing-grievance .grievance-table { margin-bottom: 25px !important; }
+            body.printing-grievance .grievance-table th, body.printing-grievance .grievance-table td { border: 2px solid #000 !important; background: transparent !important; color: #000 !important; font-family: Arial, sans-serif !important; font-size: 14px !important; padding: 5px !important; }
         }
     </style>
 </head>
@@ -402,23 +349,14 @@
             </div>
 
             <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="margin-top: 0; color: #d35400;">ثانياً: إعدادات درجات رفع المقرر (المدخلة يدوياً عبر زر + بالجدول)</h3>
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #4e342e;">تحديد مكان إضافة الدرجة في حالة (المقررات الممتدة):</label>
-                    <select id="bulkTargetContinuous" class="search-input" style="border-color: #e67e22; padding: 10px; font-size: 16px;" onchange="triggerReRender()">
-                        <option value="t1_writ">1- تضاف إلى التحريري (فصل أول)</option>
-                        <option value="t2_writ" selected>2- تضاف إلى التحريري (فصل ثاني)</option>
-                        <option value="split_writ">3- تقسم على التحريري (للفصلين)</option>
-                        <option value="total">4- تضاف إلى المجموع الكلي للمقرر</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #4e342e;">تحديد مكان إضافة الدرجة في حالة (المقررات غير الممتدة):</label>
-                    <select id="bulkTargetNormal" class="search-input" style="border-color: #e67e22; padding: 10px; font-size: 16px;" onchange="triggerReRender()">
-                        <option value="writ" selected>1- تضاف إلى التحريري</option>
-                        <option value="total">2- تضاف إلى المجموع</option>
-                    </select>
-                </div>
+                <h3 style="margin-top: 0; color: #d35400;">ثانياً: قواعد إضافة درجات رفع المقرر (المدخلة يدوياً عبر زر + بالجدول)</h3>
+                <p style="font-size: 16px; font-weight: bold; color: #4e342e; line-height: 1.6;">
+                    تم ضبط النظام تلقائياً للعمل بالقواعد التالية:
+                    <br><br>
+                    <span style="color: #d35400;">✔️ المقررات ذات الفصل الواحد:</span> تضاف الدرجة إلى (التحريري) بحد أقصى النهاية العظمى.
+                    <br><br>
+                    <span style="color: #d35400;">✔️ المقررات الممتدة:</span> تضاف الدرجة إلى (تحريري الترم الأول) أولاً، وإذا اكتملت النهاية العظمى لتحريري الترم الأول، يُرّحل الباقي تلقائياً إلى (تحريري الترم الثاني) بحد أقصى النهاية العظمى.
+                </p>
             </div>
 
             <div style="background: #e8f5e9; padding: 20px; border-radius: 10px;">
@@ -1174,8 +1112,6 @@
                 let regGracePct = parseFloat(freshmanGraceLimitPct) || 0;
                 let repGracePct = parseFloat(repeaterGraceLimitPct) || 0;
                 let excludeZeroWrittenFromBulk = document.getElementById('chkExcludeZeroWritten').checked;
-                let bulkSettingCont = document.getElementById('bulkTargetContinuous').value;
-                let bulkSettingNormal = document.getElementById('bulkTargetNormal').value;
 
                 dataArray.forEach(student => {
                     let tr = document.createElement('tr');
@@ -1192,8 +1128,9 @@
 
                     let activeGraceLimitPct = statStr.includes("مستجد") ? regGracePct : repGracePct;
 
-                    // --- PRE-PASS: Count Initial Fails before Grace Marks ---
-                    let initialFailsCount = 0;
+                    let initialCoreFails = 0, initialHumFails = 0;
+                    let simCoreFails = 0, simHumFails = 0;
+
                     defaultSubjects.forEach(subject => {
                         let actual = student?.scores?.[subject] || {}; 
                         let maxs = student?.maxScores?.[subject] || {};
@@ -1211,7 +1148,7 @@
                             if (actual.passedT1 || actual.passedT2) passedStatusText = 'سبق نجاحه';
                         }
 
-                        if (passedStatusText && !evaluateHalf) return; // passed fully, skip
+                        if (passedStatusText && !evaluateHalf) return; 
 
                         let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
                         let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
@@ -1233,9 +1170,7 @@
                         if (maxScore > 0 && bulkAdd > 0) {
                             let canApplyBulk = true;
                             if (excludeZeroWrittenFromBulk) {
-                                if (currentIsAbsent || actual.total?.writ === 0 || actual.total?.writ === '-') {
-                                    canApplyBulk = false;
-                                }
+                                if (currentIsAbsent || actual.total?.writ === 0 || actual.total?.writ === '-') canApplyBulk = false;
                             }
                             if (canApplyBulk) {
                                 let actualAdded = 0; 
@@ -1246,34 +1181,36 @@
                                 if (isContinuous) {
                                     let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
                                     let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
+                                    
+                                    let remainingBulk = Math.min(bulkAdd, spaceTotal);
 
-                                    if (bulkSettingCont === 't1_writ' && !actual.t1?.isAbsent && !actual.passedT1) {
-                                        let space = t1WMax - valT1W; 
-                                        if (space > 0) { actualAdded = Math.min(bulkAdd, space, spaceTotal); valTotW += actualAdded; }
-                                    } else if (bulkSettingCont === 't2_writ' && !actual.t2?.isAbsent && !actual.passedT2) {
-                                        let space = t2WMax - valT2W;
-                                        if (space > 0) { actualAdded = Math.min(bulkAdd, space, spaceTotal); valTotW += actualAdded; }
-                                    } else if (bulkSettingCont === 'split_writ') {
-                                        let t1Space = (!actual.t1?.isAbsent && !actual.passedT1) ? Math.max(0, t1WMax - valT1W) : 0;
-                                        let t2Space = (!actual.t2?.isAbsent && !actual.passedT2) ? Math.max(0, t2WMax - valT2W) : 0;
-                                        let amountToAdd = Math.min(bulkAdd, t1Space + t2Space, spaceTotal);
-                                        if (amountToAdd > 0) {
-                                            let addT1 = Math.min(amountToAdd / 2, t1Space);
-                                            let addT2 = Math.min(amountToAdd / 2, t2Space);
-                                            if (addT1 < amountToAdd / 2) addT2 = Math.min(amountToAdd - addT1, t2Space);
-                                            if (addT2 < amountToAdd / 2) addT1 = Math.min(amountToAdd - addT2, t1Space);
-                                            valTotW += (addT1 + addT2);
-                                            actualAdded = addT1 + addT2;
+                                    if (!actual.t1?.isAbsent && !actual.passedT1) {
+                                        let spaceT1 = t1WMax - valT1W; 
+                                        if (spaceT1 > 0) { 
+                                            let addT1 = Math.min(remainingBulk, spaceT1);
+                                            valT1W += addT1;
+                                            valTotW += addT1;
+                                            actualAdded += addT1;
+                                            remainingBulk -= addT1;
                                         }
-                                    } else if (bulkSettingCont === 'total') {
-                                        actualAdded = Math.min(bulkAdd, spaceTotal);
+                                    }
+                                    if (remainingBulk > 0 && !actual.t2?.isAbsent && !actual.passedT2) {
+                                        let spaceT2 = t2WMax - valT2W;
+                                        if (spaceT2 > 0) {
+                                            let addT2 = Math.min(remainingBulk, spaceT2);
+                                            valT2W += addT2;
+                                            valTotW += addT2;
+                                            actualAdded += addT2;
+                                            remainingBulk -= addT2;
+                                        }
                                     }
                                 } else {
-                                    if (bulkSettingNormal === 'writ' && !currentIsAbsent) {
+                                    if (!currentIsAbsent) {
                                         let space = currentMaxWrit - valTotW;
-                                        if (space > 0) { actualAdded = Math.min(bulkAdd, space, spaceTotal); valTotW += actualAdded; }
-                                    } else if (bulkSettingNormal === 'total') {
-                                        actualAdded = Math.min(bulkAdd, spaceTotal);
+                                        if (space > 0) { 
+                                            actualAdded = Math.min(bulkAdd, space, spaceTotal); 
+                                            valTotW += actualAdded; 
+                                        }
                                     }
                                 }
                                 finalScore += actualAdded;
@@ -1282,16 +1219,43 @@
                         }
 
                         let percentage = (finalScore / maxScore) * 100;
-                        if (currentIsAbsent || (currentMaxWrit > 0 && valTotW < (currentMaxWrit / 3)) || percentage < 50) {
-                            initialFailsCount++;
+                        let isHum = humanitiesSubjectsKeys.includes(subject);
+                        let isAbsentFail = currentIsAbsent;
+                        let isBylawFail = (currentMaxWrit > 0 && valTotW < (currentMaxWrit / 3));
+
+                        if (isAbsentFail || isBylawFail || percentage < 50) {
+                            if (isHum) initialHumFails++; else initialCoreFails++;
+
+                            let simulatedGrace = false;
+                            if (!isAbsentFail && !isBylawFail) {
+                                if (percentage >= (50 - activeGraceLimitPct) && percentage < 50) {
+                                    simulatedGrace = true;
+                                }
+                            }
+
+                            if (!simulatedGrace) {
+                                if (isHum) simHumFails++; else simCoreFails++;
+                            }
                         }
                     });
 
-                    // إذا كان الطالب راسب في أكثر من 4 مواد مبدئياً يتم حرمانه من درجات الرأفة
-                    if (initialFailsCount > 4) {
+                    function isStatusFailing(cCount, hCount) {
+                        let tCount = cCount + hCount;
+                        if (tCount === 0 || tCount === 1 || tCount === 2) return false; 
+                        if (cCount === 2 && hCount === 1) return false; 
+                        return true; 
+                    }
+
+                    let totalInitialFails = initialCoreFails + initialHumFails;
+                    let initiallyRasib = isStatusFailing(initialCoreFails, initialHumFails);
+                    let simRasib = isStatusFailing(simCoreFails, simHumFails);
+
+                    if (totalInitialFails > 4) {
+                        activeGraceLimitPct = 0; 
+                    } 
+                    else if (initiallyRasib && simRasib) {
                         activeGraceLimitPct = 0; 
                     }
-                    // --- END PRE-PASS ---
 
                     defaultSubjects.forEach(subject => {
                         let actual = student?.scores?.[subject] || {}; 
@@ -1377,51 +1341,39 @@
                                     let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
                                     let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
 
-                                    if (bulkSettingCont === 't1_writ' && !actual.t1?.isAbsent && !actual.passedT1) {
-                                        let space = t1WMax - valT1W; 
-                                        if (space > 0) {
-                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
-                                            valT1W += actualAdded; dispT1w = valT1W;
-                                            valTotW += actualAdded; dispTotW = valTotW;
+                                    let remainingBulk = Math.min(bulkAdd, spaceTotal);
+
+                                    if (!actual.t1?.isAbsent && !actual.passedT1) {
+                                        let spaceT1 = t1WMax - valT1W; 
+                                        if (spaceT1 > 0) {
+                                            let addT1 = Math.min(remainingBulk, spaceT1);
+                                            valT1W += addT1;
+                                            dispT1w = valT1W;
+                                            valTotW += addT1;
+                                            actualAdded += addT1;
+                                            remainingBulk -= addT1;
                                         }
-                                    } else if (bulkSettingCont === 't2_writ' && !actual.t2?.isAbsent && !actual.passedT2) {
-                                        let space = t2WMax - valT2W;
-                                        if (space > 0) {
-                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
-                                            valT2W += actualAdded; dispT2w = valT2W;
-                                            valTotW += actualAdded; dispTotW = valTotW;
-                                        }
-                                    } else if (bulkSettingCont === 'split_writ') {
-                                        let t1Space = (!actual.t1?.isAbsent && !actual.passedT1) ? Math.max(0, t1WMax - valT1W) : 0;
-                                        let t2Space = (!actual.t2?.isAbsent && !actual.passedT2) ? Math.max(0, t2WMax - valT2W) : 0;
-                                        
-                                        let totalSpace = t1Space + t2Space;
-                                        let amountToAdd = Math.min(bulkAdd, totalSpace, spaceTotal);
-                                        
-                                        if (amountToAdd > 0) {
-                                            let addT1 = Math.min(amountToAdd / 2, t1Space);
-                                            let addT2 = Math.min(amountToAdd / 2, t2Space);
-                                            
-                                            if (addT1 < amountToAdd / 2) addT2 = Math.min(amountToAdd - addT1, t2Space);
-                                            if (addT2 < amountToAdd / 2) addT1 = Math.min(amountToAdd - addT2, t1Space);
-                                            
-                                            actualAdded = addT1 + addT2;
-                                            valT1W += addT1; dispT1w = valT1W;
-                                            valT2W += addT2; dispT2w = valT2W;
-                                            valTotW += actualAdded; dispTotW = valTotW;
-                                        }
-                                    } else if (bulkSettingCont === 'total') {
-                                        actualAdded = Math.min(bulkAdd, spaceTotal);
                                     }
+                                    if (remainingBulk > 0 && !actual.t2?.isAbsent && !actual.passedT2) {
+                                        let spaceT2 = t2WMax - valT2W;
+                                        if (spaceT2 > 0) {
+                                            let addT2 = Math.min(remainingBulk, spaceT2);
+                                            valT2W += addT2;
+                                            dispT2w = valT2W;
+                                            valTotW += addT2;
+                                            actualAdded += addT2;
+                                            remainingBulk -= addT2;
+                                        }
+                                    }
+                                    dispTotW = valTotW;
                                 } else {
-                                    if (bulkSettingNormal === 'writ' && !currentIsAbsent) {
+                                    if (!currentIsAbsent) {
                                         let space = currentMaxWrit - valTotW;
                                         if (space > 0) {
                                             actualAdded = Math.min(bulkAdd, space, spaceTotal);
-                                            valTotW += actualAdded; dispTotW = valTotW;
+                                            valTotW += actualAdded;
+                                            dispTotW = valTotW;
                                         }
-                                    } else if (bulkSettingNormal === 'total') {
-                                        actualAdded = Math.min(bulkAdd, spaceTotal);
                                     }
                                 }
                                 
@@ -1474,7 +1426,8 @@
                                 else if (percentage >= 75 && percentage < 85) nextThreshold = 85;
 
                                 if (nextThreshold > 0) {
-                                    let targetScore = Math.ceil((maxScore * nextThreshold) / 100);
+                                    // التعديل هنا: إذا كانت النهاية العظمى 50 فلا تجبر الكسر (تُسمح بالأنصاف 42.5 للوصول للتقدير)
+                                    let targetScore = (maxScore === 50) ? ((maxScore * nextThreshold) / 100) : Math.ceil((maxScore * nextThreshold) / 100);
                                     let gap = targetScore - finalScore;
                                     let allowedBoost = (maxScore * subjectUpgradeLimitPct) / 100;
                                     
