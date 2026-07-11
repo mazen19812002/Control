@@ -24,6 +24,7 @@
             background: var(--bg-gradient); color: var(--text-color); min-height: 100vh;
             display: flex; flex-direction: column; overflow-x: hidden; transition: transform 0.3s ease;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+            padding-bottom: 35px; /* Space for footer */
         }
         #loader {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -41,7 +42,7 @@
             background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
             border-radius: 15px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); box-sizing: border-box;
         }
-        .top-controls { display: flex; justify-content: flex-end; gap: 12px; margin: 15px 2% 0 2%; }
+        .top-controls { display: flex; justify-content: flex-end; gap: 12px; margin: 15px 2% 0 2%; transition: opacity 0.3s; }
         button {
             border: none; border-radius: 30px; padding: 10px 20px; color: white; cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: transform 0.2s ease;
@@ -106,14 +107,11 @@
         .term-breakdown { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .t-row { font-size: 13px; color: #555; border-bottom: 1px dashed #ccc; width: 100%; padding: 3px 0; }
         .t-row.last { border-bottom: none; font-size: 16px; font-weight: 900; color: #000; margin-top: 3px; padding-top: 2px; }
-        
-        /* تنسيقات الرأفة والرفع للتقدير */
         .grace-wrapper, .upgrade-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
         .grace-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #f39c12; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
         .upgrade-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #28a745; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
         .grace-original { font-size: 13px; text-decoration: line-through; color: #d32f2f; margin-top: 4px; font-weight: 900; opacity: 0.8;}
         td.upgrade-cell { background-color: #d4edda !important; color: #155724 !important; }
-        
         .grade-excellent { color: #01579b; font-weight: 900; text-shadow: 0px 0px 1px rgba(1,87,155,0.2); }
         .grade-vgood { color: #0288d1; font-weight: 900; text-shadow: 0px 0px 1px rgba(2,136,209,0.2); }
         .grade-good { color: #00897b; font-weight: 900; text-shadow: 0px 0px 1px rgba(0,137,123,0.2); }
@@ -150,13 +148,29 @@
         .grievance-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; text-align: center; font-family: 'Times New Roman', serif; }
         .grievance-table th, .grievance-table td { border: 2px solid #000; padding: 8px; font-size: 18px; font-weight: bold; color: #000;}
         .grievance-table th { background-color: #f2f2f2; }
-        .floating-btn { position: fixed; bottom: 55px; left: 25px; width: 55px; height: 55px; border-radius: 50%; background: #004d40; color: white; font-size: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2500; border: none; }
+        .floating-btn { position: fixed; bottom: 65px; left: 25px; width: 55px; height: 55px; border-radius: 50%; background: #004d40; color: white; font-size: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2500; border: none; transition: transform 0.3s; }
         .floating-btn:hover { transform: scale(1.15) rotate(180deg); }
-        .hidden-ui .top-controls { opacity: 0; pointer-events: none; }
+        .hidden-ui .top-controls, .hidden-ui .custom-footer { opacity: 0; pointer-events: none; }
+
+        /* Dr. Mazen Badawy Animated Footer */
+        .custom-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--footer-gradient);
+            background-size: 400% 400%; animation: gradientBG 10s ease infinite;
+            color: white; text-align: center; padding: 6px 0; font-size: 14px;
+            font-weight: bold; z-index: 3000; transition: opacity 0.3s;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .print-footer-tfoot { display: none; }
         @media print {
             @page { size: A3 landscape; margin: 5mm; }
-            body { background: white !important; zoom: 0.65; }
+            body { background: white !important; zoom: 0.65; padding-bottom: 0 !important;}
+            .custom-footer { display: none !important; }
             .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .top-controls, .drag-drop-section, .search-input, .floating-btn, h1, .control-panels-wrapper { display: none !important; }
             .bulk-input, input[type="checkbox"] { display: none !important; }
@@ -222,9 +236,9 @@
                 overflow: visible !important;
             }
             body.printing-modal .close-btn, body.printing-modal .search-input, body.printing-modal #btnPrintStudent, body.printing-modal .cert-display-options,
-            body.printing-grievance .close-btn, body.printing-grievance .search-input, body.printing-grievance .grievance-subjects-container, body.printing-grievance button {
-                 display: none !important;
-             }
+            body.printing-grievance .close-btn, body.printing-grievance .search-input, body.printing-grievance .grievance-subjects-container, body.printing-grievance button { 
+                display: none !important; 
+            }
             body.printing-modal h2, body.printing-grievance h2 {
                 margin-top: 0 !important;
                 color: #000 !important;
@@ -242,21 +256,16 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
-            body.printing-modal .student-cert-table th, body.printing-modal .student-cert-table td {
-                 font-size: 15px !important;
-                 color: #000 !important;
-                 padding: 8px !important;
+            body.printing-modal .student-cert-table th, body.printing-modal .student-cert-table td { 
+                font-size: 15px !important; color: #000 !important; padding: 8px !important;
             }
             body.printing-grievance .grievance-table {
                 margin-bottom: 25px !important;
             }
-            body.printing-grievance .grievance-table th, body.printing-grievance .grievance-table td {
-                 border: 2px solid #000 !important;
-                 background: transparent !important;
-                 color: #000 !important;
-                 font-family: Arial, sans-serif !important;
-                font-size: 14px !important;
-                 padding: 5px !important;
+            body.printing-grievance .grievance-table th, body.printing-grievance .grievance-table td { 
+                border: 2px solid #000 !important; background: transparent !important;
+                color: #000 !important; font-family: Arial, sans-serif !important;
+                font-size: 14px !important; padding: 5px !important;
             }
         }
     </style>
@@ -530,6 +539,10 @@
     </div>
 
     <button class="floating-btn" onclick="toggleUIVisibility()">👁️</button>
+
+    <div class="custom-footer">
+        All rights are reserved to Dr. Mazen Badawy – Doctor of English Teaching & Testing
+    </div>
 
     <script>
         function sortStudents(a, b) {
@@ -1179,6 +1192,107 @@
 
                     let activeGraceLimitPct = statStr.includes("مستجد") ? regGracePct : repGracePct;
 
+                    // --- PRE-PASS: Count Initial Fails before Grace Marks ---
+                    let initialFailsCount = 0;
+                    defaultSubjects.forEach(subject => {
+                        let actual = student?.scores?.[subject] || {}; 
+                        let maxs = student?.maxScores?.[subject] || {};
+                        let isContinuous = dynamicContinuousSubjects.includes(subject);
+                        
+                        let passedStatusText = ''; let evaluateHalf = false;
+                        let currentIsAbsent = actual.isAbsent;
+                        if (isContinuous && actual.totalTerms > 0) currentIsAbsent = (actual.absentTerms === actual.totalTerms);
+
+                        if (isContinuous) {
+                            if (actual.passedT1 && actual.passedT2) passedStatusText = 'سبق نجاحه';
+                            else if (actual.passedT1) { passedStatusText = 'سبق نجاحه ترم أول'; evaluateHalf = true; }
+                            else if (actual.passedT2) { passedStatusText = 'سبق نجاحه ترم ثاني'; evaluateHalf = true; }
+                        } else {
+                            if (actual.passedT1 || actual.passedT2) passedStatusText = 'سبق نجاحه';
+                        }
+
+                        if (passedStatusText && !evaluateHalf) return; // passed fully, skip
+
+                        let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
+                        let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
+                        let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
+                        
+                        let finalScore = actual.total?.tot || 0; 
+                        let maxScore = maxs?.finalTotal || 0; 
+                        let currentMaxWrit = maxs?.written || 0;
+
+                        if (maxScore === 0) {
+                            let fb = getSubjectFallbackMaxes(subject);
+                            maxScore = fb.tot;
+                            currentMaxWrit = fb.wr;
+                        }
+
+                        if (evaluateHalf) { maxScore = maxScore / 2; currentMaxWrit = currentMaxWrit / 2; }
+                        
+                        let bulkAdd = bulkAdditions[subject] || 0;
+                        if (maxScore > 0 && bulkAdd > 0) {
+                            let canApplyBulk = true;
+                            if (excludeZeroWrittenFromBulk) {
+                                if (currentIsAbsent || actual.total?.writ === 0 || actual.total?.writ === '-') {
+                                    canApplyBulk = false;
+                                }
+                            }
+                            if (canApplyBulk) {
+                                let actualAdded = 0; 
+                                let spaceTotal = maxScore - finalScore; 
+                                if (spaceTotal < 0) spaceTotal = 0;
+                                let fbLocal = getSubjectFallbackMaxes(subject);
+
+                                if (isContinuous) {
+                                    let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
+                                    let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
+
+                                    if (bulkSettingCont === 't1_writ' && !actual.t1?.isAbsent && !actual.passedT1) {
+                                        let space = t1WMax - valT1W; 
+                                        if (space > 0) { actualAdded = Math.min(bulkAdd, space, spaceTotal); valTotW += actualAdded; }
+                                    } else if (bulkSettingCont === 't2_writ' && !actual.t2?.isAbsent && !actual.passedT2) {
+                                        let space = t2WMax - valT2W;
+                                        if (space > 0) { actualAdded = Math.min(bulkAdd, space, spaceTotal); valTotW += actualAdded; }
+                                    } else if (bulkSettingCont === 'split_writ') {
+                                        let t1Space = (!actual.t1?.isAbsent && !actual.passedT1) ? Math.max(0, t1WMax - valT1W) : 0;
+                                        let t2Space = (!actual.t2?.isAbsent && !actual.passedT2) ? Math.max(0, t2WMax - valT2W) : 0;
+                                        let amountToAdd = Math.min(bulkAdd, t1Space + t2Space, spaceTotal);
+                                        if (amountToAdd > 0) {
+                                            let addT1 = Math.min(amountToAdd / 2, t1Space);
+                                            let addT2 = Math.min(amountToAdd / 2, t2Space);
+                                            if (addT1 < amountToAdd / 2) addT2 = Math.min(amountToAdd - addT1, t2Space);
+                                            if (addT2 < amountToAdd / 2) addT1 = Math.min(amountToAdd - addT2, t1Space);
+                                            valTotW += (addT1 + addT2);
+                                            actualAdded = addT1 + addT2;
+                                        }
+                                    } else if (bulkSettingCont === 'total') {
+                                        actualAdded = Math.min(bulkAdd, spaceTotal);
+                                    }
+                                } else {
+                                    if (bulkSettingNormal === 'writ' && !currentIsAbsent) {
+                                        let space = currentMaxWrit - valTotW;
+                                        if (space > 0) { actualAdded = Math.min(bulkAdd, space, spaceTotal); valTotW += actualAdded; }
+                                    } else if (bulkSettingNormal === 'total') {
+                                        actualAdded = Math.min(bulkAdd, spaceTotal);
+                                    }
+                                }
+                                finalScore += actualAdded;
+                                if (finalScore > maxScore) finalScore = maxScore; 
+                            }
+                        }
+
+                        let percentage = (finalScore / maxScore) * 100;
+                        if (currentIsAbsent || (currentMaxWrit > 0 && valTotW < (currentMaxWrit / 3)) || percentage < 50) {
+                            initialFailsCount++;
+                        }
+                    });
+
+                    // إذا كان الطالب راسب في أكثر من 4 مواد مبدئياً يتم حرمانه من درجات الرأفة
+                    if (initialFailsCount > 4) {
+                        activeGraceLimitPct = 0; 
+                    }
+                    // --- END PRE-PASS ---
+
                     defaultSubjects.forEach(subject => {
                         let actual = student?.scores?.[subject] || {}; 
                         let maxs = student?.maxScores?.[subject] || {};
@@ -1592,7 +1706,6 @@
             let dataKey = isOverall ? 'المجموع الكلي' : defaultSubjects[currentChartIndex - 1]; 
 
             let labels = []; let counts = {}; let bgColors = [];
-
             if (isOverall) {
                 labels = ['امتياز', 'جيد جداً', 'جيد', 'مقبول', 'منقول بمادة', 'منقول بمادتين', 'منقول بمادتين + مادة انسانية', 'راسب ويفصل', 'راسب', 'غائب', 'سبق نجاحه'];
                 bgColors = ['#01579b', '#0288d1', '#00897b', '#2e7d32', '#f39c12', '#e67e22', '#d35400', '#4a235a', '#c62828', '#757575', '#27ae60'];
