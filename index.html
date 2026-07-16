@@ -68,21 +68,22 @@
         .main-table thead tr:nth-child(2) th { height: 60px; top: 65px; background: #00acc1; font-size: 14px; z-index: 11; line-height: 1.2;}
         .max-mark { display: block; font-size: 11.5px; color: #ffe082; margin-top: 3px; text-shadow: none; font-weight: normal;}
         
-        /* New Columns Styling */
         th.pct-col { background: #006064 !important; z-index: 12 !important; color: white; }
         td.pct-cell { background: rgba(0, 96, 100, 0.1) !important; font-weight: 900; font-size: 16px; color: #004d40; text-align: center; }
         th.upgrade-col { background: #2e7d32 !important; z-index: 12 !important; color: white; }
         td.upgrade-col-cell { background: rgba(46, 125, 50, 0.1) !important; font-weight: bold; font-size: 16px; color: #1b5e20; white-space: nowrap; text-align: center; }
+        th.fail-col { background: #b71c1c !important; z-index: 12 !important; color: white; }
+        td.fail-col-cell { background: rgba(183, 28, 28, 0.05) !important; text-align: center; }
         
         th.total-col { background: #00838f !important; z-index: 12 !important; }
         td.subject-total { background: rgba(0, 150, 136, 0.15); color: #004d40; font-size: 16px;}
         td.subject-grade { background: rgba(0, 150, 136, 0.08); font-size: 17px;}
-        td.total-cell { background: rgba(0, 131, 143, 0.25) !important; font-weight: 900; font-size: 18px; color: #006064; }
+        td.total-cell { background: rgba(0, 131, 143, 0.15) !important; font-weight: 900; font-size: 18px; color: #006064; text-align: center; }
         th.status-col { background: #1565c0 !important; z-index: 12 !important; }
         td.status-cell { background: rgba(21, 101, 192, 0.1) !important; font-weight: 900; font-size: 15px; text-align: center; }
         .status-transfer { color: #e65100; font-weight: 900; }
         th.grace-col { background: #e65100 !important; z-index: 12 !important; }
-        td.grace-cell { background: rgba(230, 81, 0, 0.15) !important; font-weight: bold; font-size: 15px; color: #e65100; white-space: nowrap;}
+        td.grace-cell { background: rgba(230, 81, 0, 0.15) !important; font-weight: bold; font-size: 15px; color: #e65100; white-space: nowrap; text-align: center;}
         .term-breakdown { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .t-row { font-size: 13px; color: #555; border-bottom: 1px dashed #ccc; width: 100%; padding: 3px 0; }
         .t-row.last { border-bottom: none; font-size: 16px; font-weight: 900; color: #000; margin-top: 3px; padding-top: 2px; }
@@ -150,7 +151,7 @@
             .main-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
             .main-table th, .main-table td { padding: 3px 2px !important; border: 1px solid #444 !important; font-size: 11.5px !important; color: #000 !important; word-wrap: break-word; }
             .main-table th { background-color: #e0f7fa !important; color: #000 !important; text-shadow: none !important; box-shadow: none !important; position: static !important; font-size: 12px !important;}
-            th.total-col, th.grace-col, th.status-col, th.upgrade-col, th.pct-col { background-color: #b2ebf2 !important; color: #000 !important; }
+            th.total-col, th.grace-col, th.status-col, th.upgrade-col, th.pct-col, th.fail-col { background-color: #b2ebf2 !important; color: #000 !important; }
             .max-mark { color: #555 !important; font-size: 10px !important; margin-top: 1px; }
             td.fail-cell { background-color: #ffcdd2 !important; }
             td.total-cell { background-color: #e0f2f1 !important; }
@@ -159,6 +160,7 @@
             td.upgrade-cell { background-color: #c8e6c9 !important; color: #000 !important; }
             td.upgrade-col-cell { background-color: #c8e6c9 !important; color: #000 !important; }
             td.pct-cell { background-color: #e0f2f1 !important; color: #000 !important; }
+            td.fail-col-cell { background-color: #ffebee !important; color: #000 !important; }
             .upgrade-badge { background-color: #28a745 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
             .fail-highlight { border-color: #d32f2f; color: #d32f2f; box-shadow: none; background: transparent; padding: 1px 3px;}
             .cap-highlight { border-color: #1976d2; color: #1976d2; box-shadow: none; background: transparent; padding: 1px 3px;}
@@ -837,13 +839,15 @@
                 row2 += `<th class="${subCls}">تقدير</th>`;
             });
 
-            row1 += `<th colspan="2" class="total-col" style="min-width: 90px;">المجموع الكلي<br><span style="font-size:14px; color:#ffe082; font-weight:bold;">الدرجة الكلية: ${grandTotalMax}</span></th>
-                     <th rowspan="2" class="pct-col" style="min-width: 70px;">النسبة<br>المئوية</th>
-                     <th rowspan="2" class="status-col" style="min-width: 180px;">النتيجة النهائية</th>
-                     <th rowspan="2" class="grace-col" style="min-width: 90px;">سلة الرأفة</th>
-                     <th rowspan="2" class="upgrade-col" style="min-width: 90px;">درجات الرفع</th></tr>`;
+            // أعمدة النهاية الجديدة والمطابقة للصورة والتسلسل
+            row1 += `<th colspan="3" style="background:#a5d6a7; color:#004d40; border-bottom:1px solid #b2ebf2; z-index:12;">الاضافية</th>
+                     <th rowspan="2" class="total-col" style="min-width: 100px;">الاجمالى<hr style="margin:4px 10%; border:none; border-top:1px solid #b2ebf2;">المجموع الكلى</th>
+                     <th rowspan="2" class="pct-col" style="min-width: 90px;">النسبة<br>المئوية</th>
+                     <th rowspan="2" class="status-col" style="min-width: 130px;">التقدير</th></tr>`;
             
-            row2 += `<th class="total-col">إجمالي</th><th class="total-col">تقدير عام</th></tr>`;
+            row2 += `<th class="grace-col" style="min-width: 70px;">اجمالي<br>الرافة</th>
+                     <th class="upgrade-col" style="min-width: 70px;">اجمالي<br>الرفع</th>
+                     <th class="fail-col" style="min-width: 80px;">عدد مواد<br>الرسوب</th></tr>`;
 
             thead.innerHTML = row1 + row2;
             updateDynamicStyles(); 
@@ -1373,6 +1377,7 @@
                     let initialHumFails = 0;
                     let initialCoreFails = 0;
                     let tempStudentMaxGrandTotal = 0;
+                    let absentSubjectsCount = 0;
 
                     defaultSubjects.forEach(subject => {
                         let actual = student?.scores?.[subject] || {};
@@ -1385,6 +1390,8 @@
                         let passedStatusText = ''; let evaluateHalf = false;
                         let currentIsAbsent = actual.isAbsent;
                         if (isContinuous && actual.totalTerms > 0) currentIsAbsent = (actual.absentTerms === actual.totalTerms);
+
+                        if (currentIsAbsent) absentSubjectsCount++;
 
                         if (isContinuous) {
                             if (actual.passedT1 && actual.passedT2) passedStatusText = 'سبق نجاحه';
@@ -1919,84 +1926,43 @@
                         tr.appendChild(tdTotal); tr.appendChild(tdGrade);
                     });
 
-                    let tdGrandTotalTotal = document.createElement('td'); let tdGrandTotalGrade = document.createElement('td');
-                    tdGrandTotalTotal.className = 'total-cell'; tdGrandTotalGrade.className = 'total-cell';
-                    let studentFinalGradeObj = null;
-                    let overallUpgradeAdded = 0;
-
-                    if (studentGrandTotal > 0 || studentMaxGrandTotal > 0) {
-                        let overallPct = (studentGrandTotal / studentMaxGrandTotal) * 100;
-                        let overallIsFailing = (failedCoreCount + failedHumCount > 0);
-                        
-                        if (!overallIsFailing && overallPct >= 50 && currentOverallUpgradeLimitPct > 0) {
-                            let nextThreshold = 0;
-                            if (overallPct >= 50 && overallPct < 65) nextThreshold = 65;
-                            else if (overallPct >= 65 && overallPct < 75) nextThreshold = 75;
-                            else if (overallPct >= 75 && overallPct < 85) nextThreshold = 85;
-
-                            if (nextThreshold > 0) {
-                                let targetTotal = Math.ceil((studentMaxGrandTotal * nextThreshold) / 100);
-                                let gap = targetTotal - studentGrandTotal;
-                                let allowedBoost = (studentMaxGrandTotal * currentOverallUpgradeLimitPct) / 100;
-                                
-                                if (gap > 0 && gap <= (allowedBoost + 0.001)) {
-                                    overallUpgradeAdded = gap;
-                                }
-                            }
-                        }
-
-                        if (overallUpgradeAdded > 0) {
-                            let newTotal = studentGrandTotal + overallUpgradeAdded;
-                            studentFinalGradeObj = getEgyptianGrade((newTotal / studentMaxGrandTotal) * 100);
-                            
-                            tdGrandTotalTotal.innerHTML = `<div class="upgrade-wrapper"><span class="upgrade-badge">${newTotal}</span><span class="grace-original">${studentGrandTotal}</span></div>`;
-                            tdGrandTotalTotal.classList.add('upgrade-cell');
-                            
-                            tdGrandTotalGrade.textContent = studentFinalGradeObj.symbol; 
-                            tdGrandTotalGrade.classList.add('upgrade-cell', studentFinalGradeObj.cssClass);
-                            
-                            studentGrandTotal = newTotal; 
-                            studentTotalUpgradeMarks += overallUpgradeAdded;
-                        } else {
-                            tdGrandTotalTotal.textContent = studentGrandTotal;
-                            if (studentMaxGrandTotal > 0) {
-                                studentFinalGradeObj = getEgyptianGrade((studentGrandTotal / studentMaxGrandTotal) * 100);
-                                tdGrandTotalGrade.textContent = studentFinalGradeObj.symbol; 
-                                tdGrandTotalGrade.classList.add(studentFinalGradeObj.cssClass);
-                            } else { tdGrandTotalGrade.textContent = '-'; }
-                        }
-                    } else {
-                        tdGrandTotalTotal.textContent = '-'; tdGrandTotalGrade.textContent = '-';
-                    }
-                    tr.appendChild(tdGrandTotalTotal); tr.appendChild(tdGrandTotalGrade);
-
-                    let tdPct = document.createElement('td'); tdPct.className = 'pct-cell';
+                    // إنشاء خلايا الإجماليات والنسبة والحالة 
+                    let pct = 0;
                     if (studentMaxGrandTotal > 0 && (studentGrandTotal > 0 || studentMaxGrandTotal > 0)) {
-                        let pct = (studentGrandTotal / studentMaxGrandTotal) * 100;
-                        tdPct.textContent = pct.toFixed(1) + '%';
-                    } else {
-                        tdPct.textContent = '-';
+                        pct = (studentGrandTotal / studentMaxGrandTotal) * 100;
                     }
-                    tr.appendChild(tdPct);
 
+                    let studentFinalGradeObj = null;
+                    if (studentMaxGrandTotal > 0) {
+                        studentFinalGradeObj = getEgyptianGrade((studentGrandTotal / studentMaxGrandTotal) * 100);
+                    }
+
+                    let isTotallyAbsent = (absentSubjectsCount === defaultSubjects.length);
                     let totalFails = failedCoreCount + failedHumCount;
-                    let statusText = "ناجح ومنقول"; let statusClass = "text-passed";
+                    let statusText = "ناجح"; 
+                    let statusClass = "text-passed";
 
-                    if (totalFails === 0) { statusText = "ناجح ومنقول"; statusClass = "text-passed"; } 
-                    else if (totalFails === 1) { statusText = "منقول بمادة"; statusClass = "status-transfer"; } 
-                    else if (totalFails === 2) { statusText = "منقول بمادتين"; statusClass = "status-transfer"; } 
-                    else if (failedCoreCount === 2 && failedHumCount === 1) { statusText = "منقول بمادتين + مادة انسانية"; statusClass = "status-transfer"; } 
-                    else { 
-                        if (statStr.includes("باق")) {
-                            statusText = "راسب ويفصل";
-                        } else {
-                            statusText = `راسب في ${totalFails} مواد`;
+                    if (isTotallyAbsent) {
+                        statusText = isRepeater ? "غائب ويفصل" : "غائب";
+                        statusClass = "grade-bylaw";
+                    } else {
+                        if (totalFails === 0) { 
+                            statusText = studentFinalGradeObj ? studentFinalGradeObj.text : "ناجح"; 
+                            statusClass = studentFinalGradeObj ? studentFinalGradeObj.cssClass : "text-passed"; 
+                        } 
+                        else if (totalFails === 1) { statusText = "منقول بمادة"; statusClass = "status-transfer"; } 
+                        else if (totalFails === 2) { statusText = "منقول بمادتين"; statusClass = "status-transfer"; } 
+                        else if (failedCoreCount === 2 && failedHumCount === 1) { statusText = "منقول بمادتين + مادة انسانية"; statusClass = "status-transfer"; } 
+                        else { 
+                            statusText = isRepeater ? "راسب ويفصل" : "راسب"; 
+                            statusClass = "grade-bylaw"; 
                         }
-                        statusClass = "grade-bylaw"; 
                     }
 
                     if (student._overallStatCategory !== undefined) {
-                        if (totalFails > 0) {
+                        if (isTotallyAbsent) {
+                            student._overallStatCategory = statusText;
+                        } else if (totalFails > 0) {
                             student._overallStatCategory = statusText;
                         } else if (studentGrandTotal === 0 && studentMaxGrandTotal === 0) {
                             student._overallStatCategory = 'سبق نجاحه';
@@ -2008,45 +1974,53 @@
                     }
 
                     if(student._displayData) {
-                        if (overallUpgradeAdded > 0) {
-                            student._displayData.grandTotal = studentGrandTotal;
-                        } else {
-                            student._displayData.grandTotal = tdGrandTotalTotal.textContent;
-                        }
-                        student._displayData.grandGrade = tdGrandTotalGrade.textContent; 
+                        student._displayData.grandTotal = studentGrandTotal;
+                        student._displayData.maxTotal = studentMaxGrandTotal;
+                        student._displayData.grandGrade = studentFinalGradeObj ? studentFinalGradeObj.text : '-'; 
                         student._displayData.finalStatus = statusText;
+                        student._displayData.pct = pct;
+                        student._displayData.fails = totalFails;
+                        student._displayData.grace = studentTotalGraceMarks;
+                        student._displayData.upgrade = studentTotalUpgradeMarks;
                     }
 
-                    let tdStatus = document.createElement('td'); tdStatus.className = 'status-cell';
-                    tdStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
-                    tr.appendChild(tdStatus);
-
+                    // 1. اجمالي الرأفة
                     let tdGrace = document.createElement('td'); tdGrace.className = 'grace-cell';
-                    if (studentTotalGraceMarks > 0) {
-                        let graceCountText = '';
-                        if (graceSubjectsCount === 1) graceCountText = '(في مادة)';
-                        else if (graceSubjectsCount === 2) graceCountText = '(في مادتين)';
-                        else if (graceSubjectsCount > 2) graceCountText = `(في ${graceSubjectsCount} مواد)`;
-
-                        tdGrace.innerHTML = `<div class="grace-wrapper"><span>${studentTotalGraceMarks}</span><span style="font-size:11px; color:#555;">${graceCountText}</span></div>`;
-                    } else { tdGrace.textContent = '0'; }
+                    tdGrace.innerHTML = studentTotalGraceMarks > 0 ? `<span style="font-weight:bold;">${studentTotalGraceMarks}</span>` : `<span style="color:#999;">.</span>`;
                     tr.appendChild(tdGrace);
 
+                    // 2. اجمالي الرفع
                     let tdUpgrade = document.createElement('td'); tdUpgrade.className = 'upgrade-col-cell';
-                    if (studentTotalUpgradeMarks > 0) {
-                        let upCountText = '';
-                        if (upgradeSubjectsCount === 1) upCountText = '(في مادة)';
-                        else if (upgradeSubjectsCount === 2) upCountText = '(في مادتين)';
-                        else if (upgradeSubjectsCount > 2) upCountText = `(في ${upgradeSubjectsCount} مواد)`;
-                        
-                        if (overallUpgradeAdded > 0) {
-                            if (upCountText !== '') upCountText = upCountText.replace(')', ' + المجموع)');
-                            else upCountText = '(للمجموع)';
-                        }
-
-                        tdUpgrade.innerHTML = `<div class="upgrade-wrapper"><span style="color:#1b5e20; font-weight:bold;">${studentTotalUpgradeMarks}</span><span style="font-size:11px; color:#555;">${upCountText}</span></div>`;
-                    } else { tdUpgrade.textContent = '0'; }
+                    tdUpgrade.innerHTML = studentTotalUpgradeMarks > 0 ? `<span style="color:#1b5e20; font-weight:bold;">${studentTotalUpgradeMarks}</span>` : `<span style="color:#999;">.</span>`;
                     tr.appendChild(tdUpgrade);
+
+                    // 3. عدد مواد الرسوب
+                    let tdFailCount = document.createElement('td'); tdFailCount.className = 'fail-col-cell';
+                    tdFailCount.innerHTML = totalFails > 0 ? `<span style="color:#d32f2f; font-weight:bold;">${totalFails}</span>` : `<span style="color:#999;">.</span>`;
+                    tr.appendChild(tdFailCount);
+
+                    // 4. الاجمالى / المجموع الكلى
+                    let tdTotalStacked = document.createElement('td'); tdTotalStacked.className = 'total-cell';
+                    if (studentMaxGrandTotal > 0) {
+                        tdTotalStacked.innerHTML = `<div style="font-weight:bold; color:#006064;">${studentGrandTotal}</div><hr style="margin:2px 15%; border:none; border-top:1px solid #00838f;"><div style="font-weight:bold; color:#555; font-size:14px;">${studentMaxGrandTotal}</div>`;
+                    } else {
+                        tdTotalStacked.textContent = '-';
+                    }
+                    tr.appendChild(tdTotalStacked);
+
+                    // 5. النسبة المئوية
+                    let tdPctDisplay = document.createElement('td'); tdPctDisplay.className = 'pct-cell';
+                    if (studentMaxGrandTotal > 0 && (studentGrandTotal > 0 || studentMaxGrandTotal > 0)) {
+                        tdPctDisplay.innerHTML = `<span style="font-weight:bold; direction:ltr; display:inline-block;">% ${pct.toFixed(2)}</span>`;
+                    } else {
+                        tdPctDisplay.textContent = '-';
+                    }
+                    tr.appendChild(tdPctDisplay);
+
+                    // 6. التقدير 
+                    let tdStatus = document.createElement('td'); tdStatus.className = 'status-cell';
+                    tdStatus.innerHTML = `<span class="${statusClass}" style="font-size:16px; font-weight:bold;">${statusText}</span>`;
+                    tr.appendChild(tdStatus);
 
                     tbody.appendChild(tr);
                 });
