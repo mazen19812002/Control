@@ -1238,8 +1238,14 @@
                                 actual.total.writ += actual.t2.isAbsent ? 0 : (parseFloat(actual.t2.writ) || 0);
                             }
                             actual.total.tot = actual.total.yw + actual.total.prac + actual.total.writ;
+                            if (actual.absentTerms === actual.totalTerms && actual.totalTerms > 0) {
+                                actual.total.tot = 0;
+                            }
                         } else if (actual) {
                             actual.total.tot = actual.total.yw + actual.total.prac + actual.total.writ;
+                            if (actual.isAbsent) {
+                                actual.total.tot = 0;
+                            }
                         }
                     });
                 });
@@ -1370,7 +1376,6 @@
                     let isRepeater = statStr.includes("باق");
                     let activeGraceLimitPct = isRepeater ? repGracePct : regGracePct;
                     let activeSubjUpgradePct = currentSubjectUpgradeLimitPct;
-                    let basketPct = isRepeater ? (repGracePct / 100) : 0.03;
 
                     // --- PASS 1: Calculate Base Scores, Fails, and Max Totals ---
                     let subjectsBaseData = {};
@@ -1439,11 +1444,10 @@
                             }
                         }
 
-                        let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
-                        let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
                         let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
 
                         let finalScore = valTotYw + valTotPr + valTotW;
+                        if (currentIsAbsent) finalScore = 0;
                         let maxScore = maxs?.finalTotal || 0;
                         let currentMaxWrit = maxs?.written || 0;
 
@@ -1534,14 +1538,19 @@
                          activeGraceLimitPct = 0;
                          activeSubjUpgradePct = 0;
                     } else if (allowGrace && initialFailsCount > 0) {
-                         let availableBasket = Math.floor(tempStudentMaxGrandTotal * basketPct);
+                         let availableBasket = Math.floor(tempStudentMaxGrandTotal * 0.02);
                          let eligibleForGrace = [];
 
                          defaultSubjects.forEach(subject => {
                               let res = subjectsBaseData[subject];
                               if (res.passedStatusText && !res.evaluateHalf) return;
 
-                              if (res.isFailing && !res.isBylawFail && !res.currentIsAbsent && !res.isCapped) {
+                              let canApplyGrace = true;
+                              if (excludeZeroWrittenFromBulk && (res.valTotW === 0 || res.valTotW === '-')) {
+                                  canApplyGrace = false; 
+                              }
+
+                              if (res.isFailing && !res.isBylawFail && !res.currentIsAbsent && !res.isCapped && canApplyGrace) {
                                    let requiredMarks = Math.ceil(res.maxScore * 0.50) - res.finalScore;
                                    let maxAllowedPerSubject = (res.maxScore * activeGraceLimitPct) / 100;
 
@@ -1561,10 +1570,10 @@
                               return b.writtenScore - a.writtenScore;
                          });
 
-                         let tempAllocations = {};
                          let tempBasket = availableBasket;
                          let simCoreFails = initialCoreFails;
                          let simHumFails = initialHumFails;
+                         let tempAllocations = {};
 
                          for (let i = 0; i < eligibleForGrace.length; i++) {
                               let el = eligibleForGrace[i];
@@ -1579,7 +1588,7 @@
                          if (initiallyRasib) {
                               if (!isStatusFailing(simCoreFails, simHumFails)) targetAchieved = true;
                          } else {
-                              if (simCoreFails === 0 && simHumFails === 0) targetAchieved = true;
+                              if (Object.keys(tempAllocations).length > 0) targetAchieved = true;
                          }
 
                          if (targetAchieved) {
@@ -1704,6 +1713,7 @@
                         let dispTotW = currentIsAbsent ? '<span style="color:#c62828;">غ</span>' : actual.total?.writ;
 
                         let finalScore = valTotYw + valTotPr + valTotW; 
+                        if (currentIsAbsent) finalScore = 0;
                         let maxScore = maxs?.finalTotal || 0; 
                         let currentMaxWrit = maxs?.written || 0;
 
@@ -1845,7 +1855,7 @@
 
                             if (currentIsAbsent) {
                                 tdTotal.classList.add('fail-cell'); tdGrade.classList.add('fail-cell');
-                                displayScore = `<span class="fail-highlight">${displayScore}</span>`;
+                                displayScore = `<span class="fail-highlight">غ</span>`;
                                 displayGrade = "غ"; tdGrade.className = `subject-grade ${subCls} grade-bylaw`;
                                 subjectIsFailed = true; internalStatsGrade = 'غائب';
                             } else if (isBylawFailing) {
@@ -1910,7 +1920,7 @@
                             yw: (dispTotYw === '-' || dispTotYw === undefined) ? '-' : parseFloat(dispTotYw),
                             pr: (dispTotPr === '-' || dispTotPr === undefined) ? '-' : parseFloat(dispTotPr),
                             wr: currentIsAbsent ? 'غ' : ((dispTotW === '-' || dispTotW === undefined) ? '-' : parseFloat(dispTotW)),
-                            finalWithGraceAndUpgrade: finalScore + graceAdded + upgradeAdded
+                            finalWithGraceAndUpgrade: currentIsAbsent ? 'غ' : (finalScore + graceAdded + upgradeAdded)
                         };
 
                         let certYw = isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':(dispT1Yw !== undefined ? dispT1Yw : '-')}</div><div class="cert-term-row">${actual.passedT2?'نجح':(dispT2Yw !== undefined ? dispT2Yw : '-')}</div><div class="cert-tot-row">${dispTotYw !== undefined ? dispTotYw : '-'}</div>` : tdYW.innerHTML;
@@ -2011,7 +2021,7 @@
                     // 5. النسبة المئوية
                     let tdPctDisplay = document.createElement('td'); tdPctDisplay.className = 'pct-cell';
                     if (studentMaxGrandTotal > 0 && (studentGrandTotal > 0 || studentMaxGrandTotal > 0)) {
-                        tdPctDisplay.innerHTML = `<span style="font-weight:bold; direction:ltr; display:inline-block;">% ${pct.toFixed(2)}</span>`;
+                        tdPctDisplay.innerHTML = `<span style="font-weight:bold; direction:ltr; display:inline-block;">% ${pct.toFixed(3)}</span>`;
                     } else {
                         tdPctDisplay.textContent = '-';
                     }
@@ -2196,7 +2206,8 @@
                 }
 
                 if(actual) {
-                    totAct = actual.total.tot;
+                    let isCurrentAbs = isCont ? (actual.totalTerms > 0 && actual.absentTerms === actual.totalTerms) : actual.isAbsent;
+                    totAct = isCurrentAbs ? 'غ' : actual.total.tot;
                     if(isCont) {
                         t1yw = actual.t1.yw; t1pr = actual.t1.prac; t1wr = actual.t1.isAbsent ? 'غ' : actual.t1.writ;
                         t2yw = actual.t2.yw; t2pr = actual.t2.prac; t2wr = actual.t2.isAbsent ? 'غ' : actual.t2.writ;
@@ -2468,7 +2479,7 @@
                 html += `<td colspan="3"></td><td>${student._displayData.grandTotal}</td>`;
             }
             if (mode === 'both' || mode === 'grades') {
-                html += `<td style="font-size:20px;">${student._displayData.grandGrade}</td>`;
+                html += `<td style="font-size:20px;">${student._displayData.grandGrade} <span style="direction:ltr; display:inline-block; font-size:16px;">(${(student._displayData.pct || 0).toFixed(3)}%)</span></td>`;
             }
             
             html += `</tr>`;
@@ -2477,7 +2488,21 @@
             if (mode === 'both' || mode === 'marks') totalCols += 4;
             if (mode === 'both' || mode === 'grades') totalCols += 1;
             
-            html += `<tr><td colspan="${totalCols}" style="text-align:center; font-weight:bold; font-size:22px; color:#d32f2f; background:#fff3e0;">النتيجة النهائية: ${student._displayData.finalStatus}</td></tr>`;
+            html += `<tr style="background:#fff3e0; font-weight:bold; font-size:18px;">
+                        <td>مجموع الرأفة</td>
+                        <td colspan="${totalCols - 1}" style="text-align:center; color:#d35400;">${student._displayData.grace}</td>
+                     </tr>`;
+            html += `<tr style="background:#e8f5e9; font-weight:bold; font-size:18px;">
+                        <td>مجموع الرفع</td>
+                        <td colspan="${totalCols - 1}" style="text-align:center; color:#2e7d32;">${student._displayData.upgrade}</td>
+                     </tr>`;
+            
+            let displayFinalStatus = student._displayData.finalStatus;
+            if (displayFinalStatus.includes('راسب') && student._displayData.fails > 0) {
+                displayFinalStatus += ` في(${student._displayData.fails})`;
+            }
+
+            html += `<tr><td colspan="${totalCols}" style="text-align:center; font-weight:bold; font-size:22px; color:#d32f2f; background:#fff3e0;">النتيجة النهائية: ${displayFinalStatus}</td></tr>`;
             html += `</tbody></table>`;
             card.innerHTML = html;
         }
