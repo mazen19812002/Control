@@ -1407,12 +1407,16 @@
                         }
 
                         if (passedStatusText && !evaluateHalf) {
-                            subjectsBaseData[subject] = { passedStatusText, evaluateHalf, finalScore: 0, maxScore: 0 };
+                            subjectsBaseData[subject] = { passedStatusText, evaluateHalf, finalScore: 0, maxScore: 0, valTotW: 0 };
                             return;
                         }
 
                         let valTotYw = parseFloat(actual.total?.yw) || 0;
                         let bYw = allowBulk ? (bulkYWAdditions[subject] || {t1:0, t2:0, total:0}) : {t1:0, t2:0, total:0};
+                        
+                        let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
+                        let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
+                        let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
                         
                         if (isContinuous) {
                             let t1YwMax = actual.t1?.maxYW > 0 ? actual.t1.maxYW : fbLocal.yw / 2;
@@ -1443,8 +1447,6 @@
                                 if (bPr.total > 0 && actual.total?.prac !== undefined && actual.total?.prac !== '-') valTotPr += Math.min(bPr.total, maxPr - valTotPr);
                             }
                         }
-
-                        let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
 
                         let finalScore = valTotYw + valTotPr + valTotW;
                         if (currentIsAbsent) finalScore = 0;
@@ -1517,7 +1519,8 @@
 
                         subjectsBaseData[subject] = {
                             passedStatusText, evaluateHalf, finalScore, maxScore, valTotW, currentMaxWrit,
-                            isBylawFail, currentIsAbsent, isCapped, isFailing
+                            isBylawFail, currentIsAbsent, isCapped, isFailing,
+                            valT1W, valT2W 
                         };
                     });
 
@@ -1703,9 +1706,10 @@
                             tr.appendChild(tdPrac);
                         }
                         
-                        let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
-                        let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
-                        let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
+                        let baseObj = subjectsBaseData[subject] || {};
+                        let valT1W = baseObj.valT1W !== undefined ? baseObj.valT1W : 0;
+                        let valT2W = baseObj.valT2W !== undefined ? baseObj.valT2W : 0;
+                        let valTotW = baseObj.valTotW !== undefined ? baseObj.valTotW : 0;
                         
                         let dispT1w = actual.t1?.isAbsent ? '<span style="color:#c62828;">غ</span>' : actual.t1?.writ;
                         if (subject === 'الرسم الهندسي') { dispT1w = '-'; }
