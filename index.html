@@ -333,18 +333,30 @@
             <div style="background: #e0f7fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
                 <h3 style="margin-top: 0; color: #00838f;">أولاً: إعدادات درجات الرأفة التلقائية (للراسبين)</h3>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 15px;">
-                    <div class="grace-ctrl-group">
-                        <span>رأفة المستجد:</span>
+                    <div class="grace-ctrl-group" style="margin-bottom: 10px;">
+                        <span>رأفة المادة للمستجد:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshman', -1)">-</button>
                         <span id="lblFreshmanGrace" class="grace-disp-val">6%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshman', 1)">+</button>
                     </div>
-                    <div style="border-left: 2px solid #b2ebf2; height: 25px;"></div>
+                    <div class="grace-ctrl-group" style="margin-bottom: 10px;">
+                        <span>سلة الرأفة الكلية للمستجد:</span>
+                        <button class="btn-mini" onclick="changeGraceLimit('freshmanBasket', -1)">-</button>
+                        <span id="lblFreshmanGraceBasket" class="grace-disp-val">2%</span>
+                        <button class="btn-mini" onclick="changeGraceLimit('freshmanBasket', 1)">+</button>
+                    </div>
+                    <div style="width: 100%; border-top: 1px solid #b2ebf2; margin: 5px 0;"></div>
                     <div class="grace-ctrl-group">
-                        <span>رأفة الباقي (المعرض للفصل):</span>
+                        <span>رأفة المادة للباقي للإعادة:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('repeater', -1)">-</button>
                         <span id="lblRepeaterGrace" class="grace-disp-val">10%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('repeater', 1)">+</button>
+                    </div>
+                    <div class="grace-ctrl-group">
+                        <span>سلة الرأفة الكلية للباقي:</span>
+                        <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', -1)">-</button>
+                        <span id="lblRepeaterGraceBasket" class="grace-disp-val">4%</span>
+                        <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', 1)">+</button>
                     </div>
                 </div>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size: 16px; font-weight: bold; color: #b71c1c;">
@@ -573,7 +585,7 @@
 
         let dynamicContinuousSubjects = []; 
         const practicalSubjectsKeys = ['فيزياء', 'كيمياء', 'تكنولوجيا', 'حاسب']; 
-        const humanitiesSubjectsKeys = ['تاريخ', 'انجليزي'];
+        let humanitiesSubjectsKeys = ['تاريخ', 'انجليزي'];
 
         let globalFilesStore = {}; 
         let chartSubjectsList = ['المجموع الكلي']; 
@@ -584,6 +596,8 @@
         let chartShowPercentage = false; 
         let freshmanGraceLimitPct = 6;
         let repeaterGraceLimitPct = 10;
+        let freshmanGraceBasketPct = 2;
+        let repeaterGraceBasketPct = 4;
         let subjectUpgradeLimitPct = 1;
         let overallUpgradeLimitPct = 0;
         
@@ -615,9 +629,15 @@
             if (type === 'freshman') {
                 freshmanGraceLimitPct = Math.max(0, freshmanGraceLimitPct + val);
                 document.getElementById('lblFreshmanGrace').innerText = freshmanGraceLimitPct + '%';
-            } else {
+            } else if (type === 'repeater') {
                 repeaterGraceLimitPct = Math.max(0, repeaterGraceLimitPct + val);
                 document.getElementById('lblRepeaterGrace').innerText = repeaterGraceLimitPct + '%';
+            } else if (type === 'freshmanBasket') {
+                freshmanGraceBasketPct = Math.max(0, freshmanGraceBasketPct + val);
+                document.getElementById('lblFreshmanGraceBasket').innerText = freshmanGraceBasketPct + '%';
+            } else if (type === 'repeaterBasket') {
+                repeaterGraceBasketPct = Math.max(0, repeaterGraceBasketPct + val);
+                document.getElementById('lblRepeaterGraceBasket').innerText = repeaterGraceBasketPct + '%';
             }
             triggerReRender();
         }
@@ -637,6 +657,15 @@
             if (isVisible) hiddenCols.delete(className); else hiddenCols.add(className);
             updateDynamicStyles();
             document.getElementById('showHiddenColsBtn').style.display = hiddenCols.size > 0 ? 'inline-flex' : 'none';
+        }
+        
+        function toggleHumanities(sub, isChecked) {
+            if (isChecked) {
+                if (!humanitiesSubjectsKeys.includes(sub)) humanitiesSubjectsKeys.push(sub);
+            } else {
+                humanitiesSubjectsKeys = humanitiesSubjectsKeys.filter(s => s !== sub);
+            }
+            triggerReRender();
         }
         
         function showAllHiddenCols() {
@@ -770,12 +799,14 @@
                 let subCls = getSubjectCssClass(defSub);
                 let isContinuous = dynamicContinuousSubjects.includes(defSub);
                 let hasPractical = practicalSubjectsKeys.includes(defSub);
+                let isHum = humanitiesSubjectsKeys.includes(defSub);
                 
                 let colSpan = hasPractical ? 5 : 4; 
                 let labelText = isContinuous ? `${dispName} (ممتدة)` : dispName;
                 
                 row1 += `<th colspan="${colSpan}" class="${subCls}">
                             <label style="cursor:pointer;"><input type="checkbox" checked onchange="toggleCol('${subCls}', this.checked)"> ${labelText}</label><br>
+                            <label style="cursor:pointer; font-size:11px; color:#ffe082; display:block; margin:3px 0;"><input type="checkbox" onchange="toggleHumanities('${defSub}', this.checked)" ${isHum ? 'checked' : ''}> مادة إنسانية</label>
                             <input type="number" min="0" class="bulk-input" placeholder="+ درجات" title="اضافة درجات للتحريري" onchange="updateBulkMark('${defSub}', this.value)">
                         </th>`;
 
@@ -839,7 +870,6 @@
                 row2 += `<th class="${subCls}">تقدير</th>`;
             });
 
-            // أعمدة النهاية الجديدة والمطابقة للصورة والتسلسل
             row1 += `<th colspan="3" style="background:#a5d6a7; color:#004d40; border-bottom:1px solid #b2ebf2; z-index:12;">الاضافية</th>
                      <th rowspan="2" class="total-col" style="min-width: 100px;">الاجمالى<hr style="margin:4px 10%; border:none; border-top:1px solid #b2ebf2;">المجموع الكلى</th>
                      <th rowspan="2" class="pct-col" style="min-width: 90px;">النسبة<br>المئوية</th>
@@ -952,9 +982,9 @@
                     subScores.t1.yw = (t1yw !== undefined && t1yw !== '') ? parseFloat(t1yw) || 0 : '-';
                     if (t1pr !== undefined) subScores.t1.prac = (t1pr !== '') ? parseFloat(t1pr) || 0 : '-';
                     if (String(t1wr).trim() === 'غ' || String(t1wr).trim() === 'غائب' || String(t1wr).trim() === '-') {
-                        subScores.t1.isAbsent = (String(t1wr).trim() === 'غ');
+                        subScores.t1.isAbsent = true; 
                         subScores.t1.writ = '-';
-                        if(subScores.t1.isAbsent) subScores.absentTerms++;
+                        if(String(t1wr).trim() === 'غ' || String(t1wr).trim() === 'غائب') subScores.absentTerms++;
                     } else {
                         subScores.t1.isAbsent = false;
                         subScores.t1.writ = (t1wr !== undefined && t1wr !== '') ? parseFloat(t1wr) || 0 : '-';
@@ -964,9 +994,9 @@
                     subScores.t2.yw = (t2yw !== undefined && t2yw !== '') ? parseFloat(t2yw) || 0 : '-';
                     if (t2pr !== undefined) subScores.t2.prac = (t2pr !== '') ? parseFloat(t2pr) || 0 : '-';
                     if (String(t2wr).trim() === 'غ' || String(t2wr).trim() === 'غائب' || String(t2wr).trim() === '-') {
-                        subScores.t2.isAbsent = (String(t2wr).trim() === 'غ');
+                        subScores.t2.isAbsent = true; 
                         subScores.t2.writ = '-';
-                        if(subScores.t2.isAbsent) subScores.absentTerms++;
+                        if(String(t2wr).trim() === 'غ' || String(t2wr).trim() === 'غائب') subScores.absentTerms++;
                     } else {
                         subScores.t2.isAbsent = false;
                         subScores.t2.writ = (t2wr !== undefined && t2wr !== '') ? parseFloat(t2wr) || 0 : '-';
@@ -982,7 +1012,7 @@
                     if (pr !== undefined) subScores.total.prac = (pr !== '') ? parseFloat(pr) || 0 : 0;
                     
                     if (String(wr).trim() === 'غ' || String(wr).trim() === 'غائب' || String(wr).trim() === '-') {
-                        subScores.isAbsent = (String(wr).trim() === 'غ');
+                        subScores.isAbsent = true; 
                         subScores.total.writ = 0;
                     } else {
                         subScores.isAbsent = false;
@@ -1315,7 +1345,7 @@
                 
                 let ws = XLSX.utils.json_to_sheet(rows);
                 let safeSheetName = dispName.substring(0, 31);
-                XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
+                XLS.utils.book_append_sheet(wb, ws, safeSheetName);
             });
             
             XLSX.writeFile(wb, "شيت_الكنترول_المجمع_المخصص.xlsx");
@@ -1352,8 +1382,11 @@
                     return;
                 }
 
-                let regGracePct = allowGrace ? (parseFloat(freshmanGraceLimitPct) || 0) : 0;
-                let repGracePct = allowGrace ? (parseFloat(repeaterGraceLimitPct) || 0) : 0;
+                let regGraceSubjPct = allowGrace ? (parseFloat(freshmanGraceLimitPct) || 0) : 0;
+                let repGraceSubjPct = allowGrace ? (parseFloat(repeaterGraceLimitPct) || 0) : 0;
+                let regGraceBskPct = allowGrace ? (parseFloat(freshmanGraceBasketPct) || 0) : 0;
+                let repGraceBskPct = allowGrace ? (parseFloat(repeaterGraceBasketPct) || 0) : 0;
+
                 let currentSubjectUpgradeLimitPct = allowUpgrade ? subjectUpgradeLimitPct : 0;
                 let currentOverallUpgradeLimitPct = allowUpgrade ? overallUpgradeLimitPct : 0;
                 let excludeZeroWrittenFromBulk = document.getElementById('chkExcludeZeroWritten').checked;
@@ -1374,7 +1407,8 @@
                     let failedCoreCount = 0, failedHumCount = 0;
 
                     let isRepeater = statStr.includes("باق");
-                    let activeGraceLimitPct = isRepeater ? repGracePct : regGracePct;
+                    let activeGraceSubjPct = isRepeater ? repGraceSubjPct : regGraceSubjPct;
+                    let activeGraceBskPct = isRepeater ? repGraceBskPct : regGraceBskPct;
                     let activeSubjUpgradePct = currentSubjectUpgradeLimitPct;
 
                     // --- PASS 1: Calculate Base Scores, Fails, and Max Totals ---
@@ -1538,10 +1572,10 @@
                     let initiallyRasib = isStatusFailing(initialCoreFails, initialHumFails);
 
                     if (initialFailsCount > 4) {
-                         activeGraceLimitPct = 0;
+                         activeGraceSubjPct = 0;
                          activeSubjUpgradePct = 0;
                     } else if (allowGrace && initialFailsCount > 0) {
-                         let availableBasket = Math.floor(tempStudentMaxGrandTotal * 0.02);
+                         let availableBasket = Math.floor(tempStudentMaxGrandTotal * (activeGraceBskPct / 100));
                          let eligibleForGrace = [];
 
                          defaultSubjects.forEach(subject => {
@@ -1555,7 +1589,7 @@
 
                               if (res.isFailing && !res.isBylawFail && !res.currentIsAbsent && !res.isCapped && canApplyGrace) {
                                    let requiredMarks = Math.ceil(res.maxScore * 0.50) - res.finalScore;
-                                   let maxAllowedPerSubject = (res.maxScore * activeGraceLimitPct) / 100;
+                                   let maxAllowedPerSubject = (res.maxScore * activeGraceSubjPct) / 100;
 
                                    if (requiredMarks > 0 && requiredMarks <= maxAllowedPerSubject + 0.001) {
                                         eligibleForGrace.push({
@@ -1948,7 +1982,7 @@
 
                     let studentFinalGradeObj = null;
                     if (studentMaxGrandTotal > 0) {
-                        studentFinalGradeObj = getEgyptianGrade((studentGrandTotal / studentMaxGrandTotal) * 100);
+                        studentFinalGradeObj = getEgyptianGrade(pct);
                     }
 
                     let isTotallyAbsent = (absentSubjectsCount === defaultSubjects.length);
@@ -1987,12 +2021,21 @@
                         }
                     }
 
+                    let hideTotals = (statusText.includes("راسب") || statusText.includes("غائب") || statusText.includes("منقول"));
+
                     if(student._displayData) {
-                        student._displayData.grandTotal = studentGrandTotal;
-                        student._displayData.maxTotal = studentMaxGrandTotal;
-                        student._displayData.grandGrade = studentFinalGradeObj ? studentFinalGradeObj.text : '-'; 
+                        if (hideTotals) {
+                            student._displayData.grandTotal = '-';
+                            student._displayData.maxTotal = '-';
+                            student._displayData.grandGrade = '-';
+                            student._displayData.pct = '-';
+                        } else {
+                            student._displayData.grandTotal = studentGrandTotal;
+                            student._displayData.maxTotal = studentMaxGrandTotal;
+                            student._displayData.grandGrade = studentFinalGradeObj ? studentFinalGradeObj.text : '-'; 
+                            student._displayData.pct = pct;
+                        }
                         student._displayData.finalStatus = statusText;
-                        student._displayData.pct = pct;
                         student._displayData.fails = totalFails;
                         student._displayData.grace = studentTotalGraceMarks;
                         student._displayData.upgrade = studentTotalUpgradeMarks;
@@ -2015,7 +2058,9 @@
 
                     // 4. الاجمالى / المجموع الكلى
                     let tdTotalStacked = document.createElement('td'); tdTotalStacked.className = 'total-cell';
-                    if (studentMaxGrandTotal > 0) {
+                    if (hideTotals) {
+                        tdTotalStacked.textContent = '-';
+                    } else if (studentMaxGrandTotal > 0) {
                         tdTotalStacked.innerHTML = `<div style="font-weight:bold; color:#006064;">${studentGrandTotal}</div><hr style="margin:2px 15%; border:none; border-top:1px solid #00838f;"><div style="font-weight:bold; color:#555; font-size:14px;">${studentMaxGrandTotal}</div>`;
                     } else {
                         tdTotalStacked.textContent = '-';
@@ -2024,8 +2069,10 @@
 
                     // 5. النسبة المئوية
                     let tdPctDisplay = document.createElement('td'); tdPctDisplay.className = 'pct-cell';
-                    if (studentMaxGrandTotal > 0 && (studentGrandTotal > 0 || studentMaxGrandTotal > 0)) {
-                        tdPctDisplay.innerHTML = `<span style="font-weight:bold; direction:ltr; display:inline-block;">% ${pct.toFixed(3)}</span>`;
+                    if (hideTotals) {
+                        tdPctDisplay.textContent = '-';
+                    } else if (studentMaxGrandTotal > 0 && (studentGrandTotal > 0 || studentMaxGrandTotal > 0)) {
+                        tdPctDisplay.innerHTML = `<span style="font-weight:bold; direction:ltr; display:inline-block;">% ${pct.toFixed(2)}</span>`;
                     } else {
                         tdPctDisplay.textContent = '-';
                     }
@@ -2483,7 +2530,8 @@
                 html += `<td colspan="3"></td><td>${student._displayData.grandTotal}</td>`;
             }
             if (mode === 'both' || mode === 'grades') {
-                html += `<td style="font-size:20px;">${student._displayData.grandGrade} <span style="direction:ltr; display:inline-block; font-size:16px;">(${(student._displayData.pct || 0).toFixed(3)}%)</span></td>`;
+                let dispPct = student._displayData.pct === '-' ? '-' : `(${student._displayData.pct.toFixed(2)}%)`;
+                html += `<td style="font-size:20px;">${student._displayData.grandGrade} <span style="direction:ltr; display:inline-block; font-size:16px;">${dispPct}</span></td>`;
             }
             
             html += `</tr>`;
@@ -2545,10 +2593,13 @@
         function resetSystemData() {
             studentsDatabase = {}; currentRenderedData = []; bulkAdditions = {}; bulkYWAdditions = {}; bulkPracAdditions = {}; hiddenCols.clear(); updateDynamicStyles(); globalFilesStore = {};
             dynamicContinuousSubjects = []; chartShowPercentage = false; freshmanGraceLimitPct = 6; repeaterGraceLimitPct = 10;
-            subjectUpgradeLimitPct = 1; overallUpgradeLimitPct = 0;
+            freshmanGraceBasketPct = 2; repeaterGraceBasketPct = 4; subjectUpgradeLimitPct = 1; overallUpgradeLimitPct = 0;
+            humanitiesSubjectsKeys = ['تاريخ', 'انجليزي'];
             engineConfig = { applyBulk: true, applyGrace: true, applyUpgrade: true };
             document.getElementById('lblFreshmanGrace').innerText = '6%';
             document.getElementById('lblRepeaterGrace').innerText = '10%';
+            document.getElementById('lblFreshmanGraceBasket').innerText = '2%';
+            document.getElementById('lblRepeaterGraceBasket').innerText = '4%';
             document.getElementById('lblSubjectUpgrade').innerText = '1%';
             document.getElementById('lblOverallUpgrade').innerText = '0%';
             document.getElementById('chkExcludeZeroWritten').checked = false;
