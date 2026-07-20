@@ -492,34 +492,36 @@
         </div>
     </div>
     
-    <!-- نافذة تقرير رفع الحالة الجديدة -->
+    <!-- نافذة تقرير رفع الحالة الجديدة والمحدثة -->
     <div id="targetReportModal" class="modal">
         <div class="modal-content" style="max-width: 1000px; padding-top:40px;">
             <span class="close-btn" onclick="closeTargetReportModal()">&times;</span>
             <h2 style="color: #e67e22; margin-top:0;">🎯 تقرير الطلاب المرشحين لرفع الحالة</h2>
             
-            <div style="display:flex; gap:15px; justify-content:center; margin-bottom:20px; align-items:center; background:#fff3e0; padding:15px; border-radius:10px; border:1px solid #ffcc80;">
-                <label style="font-weight:bold; font-size:18px;">الدرجات المتاحة للرفع:</label>
-                <input type="number" id="targetMarksLimit" value="5" min="1" class="search-input" style="width:100px; text-align:center; margin:0;">
-                
-                <label style="font-weight:bold; font-size:18px;">الحالة المستهدفة:</label>
-                <select id="targetStatusSelect" class="search-input" style="width:200px; margin:0;">
-                    <option value="0">مقبول (ناجح صافي)</option>
-                    <option value="1">منقول بمادة</option>
-                    <option value="2">منقول بمادتين</option>
-                </select>
-                
-                <button class="btn-action" style="background: var(--btn-orange);" onclick="generateTargetReport()">🔄 إنشاء التقرير</button>
-            </div>
-            
-            <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #004d40; text-align:center; background:#e0f7fa; padding:10px; border-radius:8px;" id="targetReportSummary">
-                الرجاء الضغط على "إنشاء التقرير" لعرض النتائج.
+            <div style="display:flex; flex-direction: column; gap:15px; background:#fff3e0; padding:15px; border-radius:10px; border:1px solid #ffcc80; margin-bottom:20px;">
+                <div style="display:flex; justify-content:center; gap:20px; align-items:center; flex-wrap:wrap;">
+                    <label style="font-weight:bold; font-size:18px;">الدرجات المتاحة للرفع:</label>
+                    <input type="number" id="targetMarksLimit" value="5" min="1" class="search-input" style="width:100px; text-align:center; margin:0;" oninput="generateTargetReport()">
+                    
+                    <label style="font-weight:bold; font-size:18px; margin-right:15px;">معيار النجاح المستهدف:</label>
+                    <div style="display:flex; gap:15px; font-weight:bold; font-size:16px;">
+                        <label style="cursor:pointer;"><input type="radio" name="targetStatusRadio" value="0" onchange="generateTargetReport()"> ناجح صافي</label>
+                        <label style="cursor:pointer;"><input type="radio" name="targetStatusRadio" value="1" onchange="generateTargetReport()"> منقول بمادة</label>
+                        <label style="cursor:pointer;"><input type="radio" name="targetStatusRadio" value="2" checked onchange="generateTargetReport()"> منقول بمادتين</label>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content: space-around; font-size: 18px; font-weight: bold; color: #004d40; background:#e0f7fa; padding:10px; border-radius:8px; border:1px solid #b2ebf2;" id="targetReportSummary">
+                    <div>نسبة النجاح الحالية: <span id="currentSuccessRate" style="color:#d32f2f;">0%</span></div>
+                    <div>النسبة بعد التحديد: <span id="simulatedSuccessRate" style="color:#2e7d32;">0%</span></div>
+                    <div>إجمالي المرشحين: <span id="candidatesCount" style="color:#e67e22;">0</span></div>
+                </div>
             </div>
             
             <div class="table-responsive">
                 <table class="main-table" id="targetReportTable">
                     <thead>
                         <tr>
+                            <th style="background:#e67e22; width:50px;">تحديد</th>
                             <th style="background:#e67e22;">اسم الطالب</th>
                             <th style="background:#e67e22;">الحالة الحالية</th>
                             <th style="background:#e67e22;">الحالة المستهدفة</th>
@@ -527,7 +529,7 @@
                         </tr>
                     </thead>
                     <tbody id="targetReportTbody">
-                        <tr><td colspan="4" style="padding:20px; color:#757575;">النتائج ستظهر هنا...</td></tr>
+                        <tr><td colspan="5" style="padding:20px; color:#757575;">النتائج ستظهر هنا...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -670,6 +672,7 @@
         function openTargetReportModal() { 
             if(currentRenderedData.length === 0) { alert("يرجى معالجة الكشوف أولاً."); return; }
             document.getElementById('targetReportModal').style.display = 'block'; 
+            generateTargetReport(); // Initialize on open
         }
         function closeTargetReportModal() { document.getElementById('targetReportModal').style.display = 'none'; }
 
@@ -2655,24 +2658,35 @@
         }
 
         function generateTargetReport() {
-            if (currentRenderedData.length === 0) return alert("يرجى معالجة الكشوف أولاً.");
-            let limit = parseInt(document.getElementById('targetMarksLimit').value) || 5;
-            let targetFailsAllowed = parseInt(document.getElementById('targetStatusSelect').value);
+            if (currentRenderedData.length === 0) return; // Silent check to avoid errors on load
+            
+            let limit = parseInt(document.getElementById('targetMarksLimit').value) || 0;
+            let targetStatusRadio = document.querySelector('input[name="targetStatusRadio"]:checked');
+            let targetFailsAllowed = targetStatusRadio ? parseInt(targetStatusRadio.value) : 2;
 
             let tbody = document.getElementById('targetReportTbody');
             tbody.innerHTML = '';
             let candidatesCount = 0;
 
             let totalStudents = currentRenderedData.length;
-            let initiallyPassed = currentRenderedData.filter(s => s._displayData.fails === 0 && !s._displayData.finalStatus.includes("غائب")).length;
+            let initiallyPassed = 0;
+
+            currentRenderedData.forEach(student => {
+                let currentFails = student._displayData.fails;
+                let statusBefore = student._displayData.finalStatus;
+                if (!statusBefore.includes("غائب ويفصل") && statusBefore !== "غائب") {
+                    if (currentFails <= targetFailsAllowed) {
+                        initiallyPassed++;
+                    }
+                }
+            });
 
             currentRenderedData.forEach(student => {
                 let currentFails = student._displayData.fails;
                 let statusBefore = student._displayData.finalStatus;
 
-                if (currentFails === 0 && !statusBefore.includes("غائب")) return;
                 if (statusBefore.includes("غائب ويفصل") || statusBefore === "غائب") return;
-                if (currentFails <= targetFailsAllowed) return;
+                if (currentFails <= targetFailsAllowed) return; // Already meets target
 
                 let failedSubjects = [];
                 defaultSubjects.forEach(sub => {
@@ -2735,6 +2749,7 @@
 
                     let tr = document.createElement('tr');
                     tr.innerHTML = `
+                        <td style="text-align:center;"><input type="checkbox" class="sim-check" checked style="width:20px; height:20px; cursor:pointer;" onchange="updateSimulatedPercentage()"></td>
                         <td>${student.name}</td>
                         <td style="color:#d32f2f; font-weight:bold;">${statusBefore}</td>
                         <td style="color:#2e7d32; font-weight:bold;">${statusAfter}</td>
@@ -2745,17 +2760,26 @@
             });
 
             if (candidatesCount === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:#757575;">لا يوجد طلاب يطابقون شروط الرفع المحددة ضمن هذا النطاق.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; color:#757575;">لا يوجد طلاب يطابقون شروط الرفع المحددة ضمن هذا النطاق.</td></tr>`;
             }
 
-            let initialSuccessRate = ((initiallyPassed / totalStudents) * 100).toFixed(1);
-            let projectedSuccessRate = (((initiallyPassed + (targetFailsAllowed === 0 ? candidatesCount : 0)) / totalStudents) * 100).toFixed(1);
+            window._simTotalStudents = totalStudents;
+            window._simInitiallyPassed = initiallyPassed;
 
-            document.getElementById('targetReportSummary').innerHTML = `
-                إجمالي المرشحين: <span style="color:#e67e22;">${candidatesCount} طالب</span> |
-                نسبة النجاح الحالية (بدون منقول): <span style="color:#d32f2f;">${initialSuccessRate}%</span> |
-                النسبة المتوقعة (عند الوصول لصافي النجاح): <span style="color:#2e7d32;">${projectedSuccessRate}%</span>
-            `;
+            document.getElementById('currentSuccessRate').innerText = totalStudents > 0 ? ((initiallyPassed / totalStudents) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('candidatesCount').innerText = candidatesCount;
+            
+            updateSimulatedPercentage();
+        }
+
+        function updateSimulatedPercentage() {
+            if (!window._simTotalStudents) return;
+            
+            let checkedBoxes = document.querySelectorAll('.sim-check:checked').length;
+            let simulatedPassed = window._simInitiallyPassed + checkedBoxes;
+            let projectedSuccessRate = ((simulatedPassed / window._simTotalStudents) * 100).toFixed(1);
+            
+            document.getElementById('simulatedSuccessRate').innerText = projectedSuccessRate + '%';
         }
 
         function handleMainWildcardSearch() {
