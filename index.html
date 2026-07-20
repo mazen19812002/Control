@@ -70,8 +70,8 @@
         
         th.pct-col { background: #006064 !important; z-index: 12 !important; color: white; }
         td.pct-cell { background: rgba(0, 96, 100, 0.1) !important; font-weight: 900; font-size: 16px; color: #004d40; text-align: center; }
-        th.upgrade-col { background: #2e7d32 !important; z-index: 12 !important; color: white; }
-        td.upgrade-col-cell { background: rgba(46, 125, 50, 0.1) !important; font-weight: bold; font-size: 16px; color: #1b5e20; white-space: nowrap; text-align: center; }
+        th.upgrade-col { background: #1565c0 !important; z-index: 12 !important; color: white; }
+        td.upgrade-col-cell { background: rgba(21, 101, 192, 0.1) !important; font-weight: bold; font-size: 16px; color: #1565c0; white-space: nowrap; text-align: center; }
         th.fail-col { background: #b71c1c !important; z-index: 12 !important; color: white; }
         td.fail-col-cell { background: rgba(183, 28, 28, 0.05) !important; text-align: center; }
         
@@ -82,16 +82,17 @@
         th.status-col { background: #1565c0 !important; z-index: 12 !important; }
         td.status-cell { background: rgba(21, 101, 192, 0.1) !important; font-weight: 900; font-size: 15px; text-align: center; }
         .status-transfer { color: #e65100; font-weight: 900; }
-        th.grace-col { background: #e65100 !important; z-index: 12 !important; }
-        td.grace-cell { background: rgba(230, 81, 0, 0.15) !important; font-weight: bold; font-size: 15px; color: #e65100; white-space: nowrap; text-align: center;}
+        th.grace-col { background: #2e7d32 !important; z-index: 12 !important; }
+        td.grace-cell { background: rgba(46, 125, 50, 0.15) !important; font-weight: bold; font-size: 15px; color: #2e7d32; white-space: nowrap; text-align: center;}
         .term-breakdown { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
         .t-row { font-size: 13px; color: #555; border-bottom: 1px dashed #ccc; width: 100%; padding: 3px 0; }
         .t-row.last { border-bottom: none; font-size: 16px; font-weight: 900; color: #000; margin-top: 3px; padding-top: 2px; }
         .grace-wrapper, .upgrade-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
-        .grace-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #f39c12; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
-        .upgrade-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #28a745; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
+        .grace-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #28a745; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
+        .upgrade-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #1976d2; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
+        .cap-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #e67e22; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
         .grace-original { font-size: 13px; text-decoration: line-through; color: #d32f2f; margin-top: 4px; font-weight: 900; opacity: 0.8;}
-        td.upgrade-cell { background-color: #d4edda !important; color: #155724 !important; }
+        td.upgrade-cell { background-color: #e3f2fd !important; color: #0d47a1 !important; }
         .grade-excellent { color: #01579b; font-weight: 900; text-shadow: 0px 0px 1px rgba(1,87,155,0.2); }
         .grade-vgood { color: #0288d1; font-weight: 900; text-shadow: 0px 0px 1px rgba(2,136,209,0.2); }
         .grade-good { color: #00897b; font-weight: 900; text-shadow: 0px 0px 1px rgba(0,137,123,0.2); }
@@ -142,7 +143,7 @@
             @page { size: A3 landscape; margin: 5mm; }
             body { background: white !important; zoom: 0.65; padding-bottom: 0 !important;}
             .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .top-controls, .drag-drop-section, .search-input, .floating-btn, h1, .control-panels-wrapper, #importExportedArea { display: none !important; }
+            .top-controls, .drag-drop-section, .search-dropdown-container, .floating-btn, h1, .control-panels-wrapper, #importExportedArea { display: none !important; }
             .bulk-input, .bulk-component-input, input[type="checkbox"], .cap-btn { display: none !important; }
             .table-responsive { max-height: none !important; overflow: visible !important; box-shadow: none !important; margin-top: 0 !important;}
             table.main-table { width: 100% !important; table-layout: auto; border-collapse: collapse !important; display: table !important; }
@@ -155,16 +156,17 @@
             .max-mark { color: #555 !important; font-size: 10px !important; margin-top: 1px; }
             td.fail-cell { background-color: #ffcdd2 !important; }
             td.total-cell { background-color: #e0f2f1 !important; }
-            td.grace-cell { background-color: #ffe0b2 !important; }
+            td.grace-cell { background-color: #c8e6c9 !important; }
             td.status-cell { background-color: #e3f2fd !important; }
-            td.upgrade-cell { background-color: #c8e6c9 !important; color: #000 !important; }
-            td.upgrade-col-cell { background-color: #c8e6c9 !important; color: #000 !important; }
+            td.upgrade-cell { background-color: #e3f2fd !important; color: #000 !important; }
+            td.upgrade-col-cell { background-color: #e3f2fd !important; color: #000 !important; }
             td.pct-cell { background-color: #e0f2f1 !important; color: #000 !important; }
             td.fail-col-cell { background-color: #ffebee !important; color: #000 !important; }
-            .upgrade-badge { background-color: #28a745 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
+            .upgrade-badge { background-color: #1976d2 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
             .fail-highlight { border-color: #d32f2f; color: #d32f2f; box-shadow: none; background: transparent; padding: 1px 3px;}
             .cap-highlight { border-color: #1976d2; color: #1976d2; box-shadow: none; background: transparent; padding: 1px 3px;}
-            .grace-badge { background-color: #f57c00 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
+            .grace-badge { background-color: #28a745 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
+            .cap-badge { background-color: #e67e22 !important; color: white !important; padding: 1px 4px; box-shadow: none; display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap; text-shadow: none; }
             .grace-original { color: #000 !important; font-size: 10px !important;}
             .text-passed { font-size: 10px !important; color: #000 !important; }
             .status-transfer { color: #000 !important; font-weight: bold !important; }
@@ -263,8 +265,9 @@
             <button id="showHiddenColsBtn" class="btn-action" style="display: none; background: var(--btn-orange);" onclick="showAllHiddenCols()">👁️ إظهار جميع المواد المخفية</button>
         </div>
         
-        <div class="search-dropdown-container">
-            <input type="text" id="mainSearchInput" class="search-input" placeholder="🔎 تصفية الجدول الرئيسي بالاسم، أو رقم الجلوس (يدعم *)..." oninput="handleMainWildcardSearch()">
+        <div class="search-dropdown-container" style="display: flex; gap: 10px; align-items: center; margin: 15px 0;">
+            <input type="text" id="mainSearchInput" class="search-input" style="margin: 0; flex: 1;" placeholder="🔎 تصفية الجدول الرئيسي بالاسم، أو رقم الجلوس (يدعم *)..." oninput="handleMainWildcardSearch()">
+            <button id="toggleRepeatersBtn" class="btn-danger" style="padding: 12px 20px; border-radius: 10px; margin: 0;" onclick="toggleRepeatersFilter()">🔻 القفز الي الباقين</button>
         </div>
         
         <div class="table-responsive">
@@ -340,26 +343,26 @@
                     <div class="grace-ctrl-group" style="margin-bottom: 10px;">
                         <span>رأفة المادة للمستجد:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshman', -1)">-</button>
-                        <span id="lblFreshmanGrace" class="grace-disp-val">6%</span>
+                        <span id="lblFreshmanGrace" class="grace-disp-val" style="color: #2e7d32;">6%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshman', 1)">+</button>
                     </div>
                     <div class="grace-ctrl-group" style="margin-bottom: 10px;">
                         <span>سلة الرأفة الكلية للمستجد:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshmanBasket', -1)">-</button>
-                        <span id="lblFreshmanGraceBasket" class="grace-disp-val">2%</span>
+                        <span id="lblFreshmanGraceBasket" class="grace-disp-val" style="color: #2e7d32;">2%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshmanBasket', 1)">+</button>
                     </div>
                     <div style="width: 100%; border-top: 1px solid #b2ebf2; margin: 5px 0;"></div>
                     <div class="grace-ctrl-group">
                         <span>رأفة المادة للباقي للإعادة:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('repeater', -1)">-</button>
-                        <span id="lblRepeaterGrace" class="grace-disp-val">10%</span>
+                        <span id="lblRepeaterGrace" class="grace-disp-val" style="color: #2e7d32;">10%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('repeater', 1)">+</button>
                     </div>
                     <div class="grace-ctrl-group">
                         <span>سلة الرأفة الكلية للباقي:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', -1)">-</button>
-                        <span id="lblRepeaterGraceBasket" class="grace-disp-val">4%</span>
+                        <span id="lblRepeaterGraceBasket" class="grace-disp-val" style="color: #2e7d32;">4%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', 1)">+</button>
                     </div>
                 </div>
@@ -379,20 +382,20 @@
                 </p>
             </div>
             <div style="background: #e8f5e9; padding: 20px; border-radius: 10px;">
-                <h3 style="margin-top: 0; color: #2e7d32;">ثالثاً: إعدادات رفع التقدير (للناجحين للوصول للتقدير الأعلى مباشرة)</h3>
+                <h3 style="margin-top: 0; color: #1565c0;">ثالثاً: إعدادات رفع التقدير (للناجحين للوصول للتقدير الأعلى مباشرة)</h3>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
                     <div class="grace-ctrl-group">
                         <span>رفع مجموع المادة:</span>
-                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('subject', -1)">-</button>
-                        <span id="lblSubjectUpgrade" class="grace-disp-val" style="color:#2e7d32;">1%</span>
-                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('subject', 1)">+</button>
+                        <button class="btn-mini" style="background:#1976d2;" onclick="changeUpgradeLimit('subject', -1)">-</button>
+                        <span id="lblSubjectUpgrade" class="grace-disp-val" style="color:#1976d2;">1%</span>
+                        <button class="btn-mini" style="background:#1976d2;" onclick="changeUpgradeLimit('subject', 1)">+</button>
                     </div>
                     <div style="border-left: 2px solid #a5d6a7; height: 25px;"></div>
                     <div class="grace-ctrl-group">
                         <span>رفع المجموع الكلي:</span>
-                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('overall', -1)">-</button>
-                        <span id="lblOverallUpgrade" class="grace-disp-val" style="color:#2e7d32;">0%</span>
-                        <button class="btn-mini" style="background:#2e7d32;" onclick="changeUpgradeLimit('overall', 1)">+</button>
+                        <button class="btn-mini" style="background:#1976d2;" onclick="changeUpgradeLimit('overall', -1)">-</button>
+                        <span id="lblOverallUpgrade" class="grace-disp-val" style="color:#1976d2;">0%</span>
+                        <button class="btn-mini" style="background:#1976d2;" onclick="changeUpgradeLimit('overall', 1)">+</button>
                     </div>
                 </div>
             </div>
@@ -650,6 +653,7 @@
         let overallUpgradeLimitPct = 0;
         
         let currentGrievanceStudent = null;
+        let showingOnlyRepeaters = false;
 
         function toggleChartModeCheckbox(isChecked) {
             chartShowPercentage = isChecked;
@@ -677,7 +681,43 @@
         function closeTargetReportModal() { document.getElementById('targetReportModal').style.display = 'none'; }
 
         function triggerReRender() { 
-            if(currentRenderedData.length > 0) renderMainTable(currentRenderedData); 
+            if(currentRenderedData.length > 0) handleMainWildcardSearch(); 
+        }
+
+        function toggleRepeatersFilter() {
+            showingOnlyRepeaters = !showingOnlyRepeaters;
+            let btn = document.getElementById('toggleRepeatersBtn');
+            if (showingOnlyRepeaters) {
+                btn.innerHTML = '🔺 إظهار الكل';
+                btn.className = 'btn-action';
+                btn.style.background = 'var(--btn-blue-green)';
+            } else {
+                btn.innerHTML = '🔻 القفز الي الباقين';
+                btn.className = 'btn-danger';
+                btn.style.background = 'var(--btn-red)';
+            }
+            handleMainWildcardSearch();
+        }
+
+        function handleMainWildcardSearch() {
+            let searchStr = document.getElementById('mainSearchInput').value.trim();
+            let dataToFilter = Object.values(studentsDatabase).sort(sortStudents);
+            
+            if (showingOnlyRepeaters) {
+                dataToFilter = dataToFilter.filter(st => (st.status || "").includes("باق"));
+            }
+
+            if (!searchStr) {
+                renderMainTable(dataToFilter);
+                return;
+            }
+            if (!searchStr.includes('*') && !searchStr.includes('?')) searchStr = '*' + searchStr + '*';
+            try {
+                let regexStr = "^" + searchStr.replace(/([.+^${}()|[\]\\])/g, "\\$1").replace(/\*/g, ".*").replace(/\?/g, ".") + "$";
+                let criteriaRegex = new RegExp(regexStr, "i");
+                let filteredList = dataToFilter.filter(student => criteriaRegex.test(student.name) || criteriaRegex.test(student.seatNumber));
+                renderMainTable(filteredList);
+            } catch (e) { }
         }
 
         function changeGraceLimit(type, val) {
@@ -1897,6 +1937,7 @@
                               capBtnHtml = `<button class="${btnClass}" onclick="toggleRepeaterCap(${studentIndex}, '${subject}')" title="تفعيل/إلغاء تخفيض الرأفة 64%">🎯</button>`;
                         }
                         
+                        let uncappedScore = finalScore;
                         if (isCapped) {
                             let capLimit = Math.floor(maxScore * 0.64);
                             if (finalScore > capLimit) { finalScore = capLimit; wasActuallyCapped = true; }
@@ -2013,7 +2054,7 @@
                                 internalStatsGrade = raisedGradeInfo.text;
                             } else {
                                 if (wasActuallyCapped) {
-                                    displayScore = `<span class="cap-highlight">${displayScore}</span>`;
+                                    displayScore = `<div class="upgrade-wrapper"><span class="cap-badge">${displayScore}</span><span class="grace-original">${uncappedScore}</span></div>`;
                                     tdGrade.className = `subject-grade ${subCls} cap-grade`;
                                 }
                                 internalStatsGrade = gradeInfo.text;
@@ -2130,7 +2171,7 @@
 
                     // 2. اجمالي الرفع
                     let tdUpgrade = document.createElement('td'); tdUpgrade.className = 'upgrade-col-cell';
-                    tdUpgrade.innerHTML = studentTotalUpgradeMarks > 0 ? `<span style="color:#1b5e20; font-weight:bold;">${studentTotalUpgradeMarks}</span>` : `<span style="color:#999;">.</span>`;
+                    tdUpgrade.innerHTML = studentTotalUpgradeMarks > 0 ? `<span style="font-weight:bold;">${studentTotalUpgradeMarks}</span>` : `<span style="color:#999;">.</span>`;
                     tr.appendChild(tdUpgrade);
 
                     // 3. عدد مواد الرسوب
@@ -2780,21 +2821,6 @@
             let projectedSuccessRate = ((simulatedPassed / window._simTotalStudents) * 100).toFixed(1);
             
             document.getElementById('simulatedSuccessRate').innerText = projectedSuccessRate + '%';
-        }
-
-        function handleMainWildcardSearch() {
-            let searchStr = document.getElementById('mainSearchInput').value.trim();
-            if (!searchStr) {
-                renderMainTable(Object.values(studentsDatabase).sort(sortStudents));
-                return;
-            }
-            if (!searchStr.includes('*') && !searchStr.includes('?')) searchStr = '*' + searchStr + '*';
-            try {
-                let regexStr = "^" + searchStr.replace(/([.+^${}()|[\]\\])/g, "\\$1").replace(/\*/g, ".*").replace(/\?/g, ".") + "$";
-                let criteriaRegex = new RegExp(regexStr, "i");
-                let filteredList = currentRenderedData.filter(student => criteriaRegex.test(student.name) || criteriaRegex.test(student.seatNumber));
-                renderMainTable(filteredList);
-            } catch (e) { }
         }
 
         function resetSystemData() {
