@@ -501,7 +501,7 @@
             <div style="display:flex; flex-direction: column; gap:15px; background:#fff3e0; padding:15px; border-radius:10px; border:1px solid #ffcc80; margin-bottom:20px;">
                 <div style="display:flex; justify-content:center; gap:20px; align-items:center; flex-wrap:wrap;">
                     <label style="font-weight:bold; font-size:18px;">الدرجات المتاحة للرفع:</label>
-                    <input type="number" id="targetMarksLimit" value="5" min="1" class="search-input" style="width:100px; text-align:center; margin:0;" oninput="generateTargetReport()">
+                    <input type="number" id="targetMarksLimit" value="5" min="1" class="search-input" style="width:100px; text-align:center; margin:0;" oninput="generateTargetReport()" onchange="generateTargetReport()" onkeyup="generateTargetReport()">
                     
                     <label style="font-weight:bold; font-size:18px; margin-right:15px;">معيار النجاح المستهدف:</label>
                     <div style="display:flex; gap:15px; font-weight:bold; font-size:16px;">
