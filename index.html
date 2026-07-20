@@ -216,6 +216,9 @@
             <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
                 <input type="radio" name="readMode" value="import_exported" onchange="toggleReadMode()"> 🔄 استيراد نسخة مصدرة
             </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <input type="radio" name="readMode" value="github_integrated" onchange="toggleReadMode()"> 🌐 شيت مجمع من GitHub
+            </label>
         </div>
         
         <div class="drag-drop-section" id="dragDropArea">
@@ -252,6 +255,7 @@
             <button class="btn-stats" onclick="openStatsModal()">📊 إحصائيات ونسب النجاح</button>
             <button class="btn-action" style="background: var(--btn-purple);" onclick="openStudentDetailModal()">🔍 استعلام وطباعة شهادة طالب</button>
             <button class="btn-grievance" onclick="openGrievanceModal()">📝 تقرير التظلمات</button>
+            <button class="btn-action" style="background: #e67e22;" onclick="openTargetReportModal()">🎯 تقرير رفع الحالة</button>
             <button class="btn-print" onclick="window.print()">🖨️ طباعة الكشوف (PDF)</button>
             <button class="btn-print" style="background: #27ae60;" onclick="openExportModal()">📥 استخراج شيت مجمع (Excel)</button>
             <button class="btn-settings" onclick="openSettingsModal()">⚙️ الإعدادات</button>
@@ -488,6 +492,48 @@
         </div>
     </div>
     
+    <!-- نافذة تقرير رفع الحالة الجديدة -->
+    <div id="targetReportModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px; padding-top:40px;">
+            <span class="close-btn" onclick="closeTargetReportModal()">&times;</span>
+            <h2 style="color: #e67e22; margin-top:0;">🎯 تقرير الطلاب المرشحين لرفع الحالة</h2>
+            
+            <div style="display:flex; gap:15px; justify-content:center; margin-bottom:20px; align-items:center; background:#fff3e0; padding:15px; border-radius:10px; border:1px solid #ffcc80;">
+                <label style="font-weight:bold; font-size:18px;">الدرجات المتاحة للرفع:</label>
+                <input type="number" id="targetMarksLimit" value="5" min="1" class="search-input" style="width:100px; text-align:center; margin:0;">
+                
+                <label style="font-weight:bold; font-size:18px;">الحالة المستهدفة:</label>
+                <select id="targetStatusSelect" class="search-input" style="width:200px; margin:0;">
+                    <option value="0">مقبول (ناجح صافي)</option>
+                    <option value="1">منقول بمادة</option>
+                    <option value="2">منقول بمادتين</option>
+                </select>
+                
+                <button class="btn-action" style="background: var(--btn-orange);" onclick="generateTargetReport()">🔄 إنشاء التقرير</button>
+            </div>
+            
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #004d40; text-align:center; background:#e0f7fa; padding:10px; border-radius:8px;" id="targetReportSummary">
+                الرجاء الضغط على "إنشاء التقرير" لعرض النتائج.
+            </div>
+            
+            <div class="table-responsive">
+                <table class="main-table" id="targetReportTable">
+                    <thead>
+                        <tr>
+                            <th style="background:#e67e22;">اسم الطالب</th>
+                            <th style="background:#e67e22;">الحالة الحالية</th>
+                            <th style="background:#e67e22;">الحالة المستهدفة</th>
+                            <th style="background:#e67e22;">الدرجات المطلوبة (عملي/أعمال/تحريري)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="targetReportTbody">
+                        <tr><td colspan="4" style="padding:20px; color:#757575;">النتائج ستظهر هنا...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
     <button class="floating-btn" onclick="toggleUIVisibility()">👁️</button>
 
     <script>
@@ -620,6 +666,12 @@
         
         function openExportModal() { document.getElementById('exportModal').style.display = 'block'; }
         function closeExportModal() { document.getElementById('exportModal').style.display = 'none'; }
+        
+        function openTargetReportModal() { 
+            if(currentRenderedData.length === 0) { alert("يرجى معالجة الكشوف أولاً."); return; }
+            document.getElementById('targetReportModal').style.display = 'block'; 
+        }
+        function closeTargetReportModal() { document.getElementById('targetReportModal').style.display = 'none'; }
 
         function triggerReRender() { 
             if(currentRenderedData.length > 0) renderMainTable(currentRenderedData); 
@@ -1221,6 +1273,33 @@
                         }
                     });
                     hasProcessedAnyFile = true;
+                } else if (mode === 'github_integrated') {
+                    try {
+                        let response = await fetch("شيت_الكنترول_المجمع_المخصص.xlsx");
+                        if (!response.ok) {
+                            document.getElementById('loader').style.display = 'none';
+                            alert("الملف المجمع غير موجود على السيرفر (شيت_الكنترول_المجمع_المخصص.xlsx).");
+                            return;
+                        }
+                        let buffer = await response.arrayBuffer();
+                        let wb = XLSX.read(buffer, { type: 'array' });
+
+                        defaultSubjects.forEach((defSub, idx) => {
+                            let dispName = mappedSubjects[idx];
+                            let sheetName = wb.SheetNames.find(s => s === dispName.substring(0, 31));
+
+                            if (sheetName) {
+                                let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: 0 });
+                                processExportedExcelRows(rows, defSub);
+                            }
+                        });
+                        hasProcessedAnyFile = true;
+                    } catch (err) {
+                        console.error(err);
+                        alert("خطأ في جلب أو معالجة الشيت المجمع من السيرفر.");
+                        document.getElementById('loader').style.display = 'none';
+                        return;
+                    }
                 }
 
                 if (!hasProcessedAnyFile) { 
@@ -1345,7 +1424,7 @@
                 
                 let ws = XLSX.utils.json_to_sheet(rows);
                 let safeSheetName = dispName.substring(0, 31);
-                XLS.utils.book_append_sheet(wb, ws, safeSheetName);
+                XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
             });
             
             XLSX.writeFile(wb, "شيت_الكنترول_المجمع_المخصص.xlsx");
@@ -2573,6 +2652,110 @@
                 let s = document.getElementById('studentPrintStyle');
                 if(s) s.remove();
             }, 500);
+        }
+
+        function generateTargetReport() {
+            if (currentRenderedData.length === 0) return alert("يرجى معالجة الكشوف أولاً.");
+            let limit = parseInt(document.getElementById('targetMarksLimit').value) || 5;
+            let targetFailsAllowed = parseInt(document.getElementById('targetStatusSelect').value);
+
+            let tbody = document.getElementById('targetReportTbody');
+            tbody.innerHTML = '';
+            let candidatesCount = 0;
+
+            let totalStudents = currentRenderedData.length;
+            let initiallyPassed = currentRenderedData.filter(s => s._displayData.fails === 0 && !s._displayData.finalStatus.includes("غائب")).length;
+
+            currentRenderedData.forEach(student => {
+                let currentFails = student._displayData.fails;
+                let statusBefore = student._displayData.finalStatus;
+
+                if (currentFails === 0 && !statusBefore.includes("غائب")) return;
+                if (statusBefore.includes("غائب ويفصل") || statusBefore === "غائب") return;
+                if (currentFails <= targetFailsAllowed) return;
+
+                let failedSubjects = [];
+                defaultSubjects.forEach(sub => {
+                    let disp = student._processedScores[sub];
+                    if (!disp || disp.finalWithGraceAndUpgrade === 'غ') return; 
+
+                    let grade = student._gradesForStats[sub];
+                    if (grade === 'ضعيف' || grade === 'ضعيف جداً' || grade === 'راسب لائحة' || grade === 'غائب') {
+                        let maxs = student.maxScores[sub];
+                        let fb = getSubjectFallbackMaxes(sub);
+                        let maxTot = maxs?.finalTotal || fb.tot;
+                        let maxWr = maxs?.written || fb.wr;
+
+                        if (dynamicContinuousSubjects.includes(sub)) {
+                            let actual = student.scores[sub];
+                            if (actual.passedT1 || actual.passedT2) {
+                                maxTot /= 2; maxWr /= 2;
+                            }
+                        }
+
+                        let currentFinal = disp.finalWithGraceAndUpgrade === 'غ' ? 0 : parseFloat(disp.finalWithGraceAndUpgrade);
+                        let currentWr = disp.wr === 'غ' ? 0 : parseFloat(disp.wr);
+
+                        let neededFor50 = Math.ceil(maxTot / 2) - currentFinal;
+                        let neededForBylaw = Math.ceil(maxWr * 0.3) - currentWr;
+
+                        let neededOverall = Math.max(0, neededFor50);
+                        let neededWritten = Math.max(0, neededForBylaw);
+                        let totalNeeded = Math.max(neededOverall, neededWritten);
+
+                        if (totalNeeded > 0 || grade === 'راسب لائحة') {
+                            if (totalNeeded === 0 && grade === 'راسب لائحة') totalNeeded = 1; 
+                            failedSubjects.push({ subject: sub, needed: totalNeeded, reqWrit: neededWritten, reqTotal: neededOverall });
+                        }
+                    }
+                });
+
+                failedSubjects.sort((a, b) => a.needed - b.needed);
+
+                let subjectsToFix = currentFails - targetFailsAllowed;
+                if (failedSubjects.length < subjectsToFix) return;
+
+                let totalMarksRequired = 0;
+                let fixDetails = [];
+                for (let i = 0; i < subjectsToFix; i++) {
+                    totalMarksRequired += failedSubjects[i].needed;
+                    let mappedName = mappedSubjects[defaultSubjects.indexOf(failedSubjects[i].subject)];
+                    let detailStr = `<strong>${mappedName}</strong>: يحتاج <strong>${failedSubjects[i].needed}</strong> درجات`;
+                    if (failedSubjects[i].reqWrit > 0) {
+                        detailStr += ` (مطلوب للتحريري: ${failedSubjects[i].reqWrit})`;
+                    } else {
+                         detailStr += ` (عملي/أعمال/تحريري)`;
+                    }
+                    fixDetails.push(detailStr);
+                }
+
+                if (totalMarksRequired > 0 && totalMarksRequired <= limit) {
+                    candidatesCount++;
+                    let statusAfter = targetFailsAllowed === 0 ? "مقبول" : (targetFailsAllowed === 1 ? "منقول بمادة" : "منقول بمادتين");
+
+                    let tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${student.name}</td>
+                        <td style="color:#d32f2f; font-weight:bold;">${statusBefore}</td>
+                        <td style="color:#2e7d32; font-weight:bold;">${statusAfter}</td>
+                        <td style="text-align:right; font-size:15px; line-height: 1.4;">${fixDetails.join('<br>')}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (candidatesCount === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; color:#757575;">لا يوجد طلاب يطابقون شروط الرفع المحددة ضمن هذا النطاق.</td></tr>`;
+            }
+
+            let initialSuccessRate = ((initiallyPassed / totalStudents) * 100).toFixed(1);
+            let projectedSuccessRate = (((initiallyPassed + (targetFailsAllowed === 0 ? candidatesCount : 0)) / totalStudents) * 100).toFixed(1);
+
+            document.getElementById('targetReportSummary').innerHTML = `
+                إجمالي المرشحين: <span style="color:#e67e22;">${candidatesCount} طالب</span> |
+                نسبة النجاح الحالية (بدون منقول): <span style="color:#d32f2f;">${initialSuccessRate}%</span> |
+                النسبة المتوقعة (عند الوصول لصافي النجاح): <span style="color:#2e7d32;">${projectedSuccessRate}%</span>
+            `;
         }
 
         function handleMainWildcardSearch() {
