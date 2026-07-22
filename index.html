@@ -278,7 +278,19 @@
         
         <div class="search-dropdown-container" style="display: flex; gap: 10px; align-items: center; margin: 15px 0;">
             <input type="text" id="mainSearchInput" class="search-input" style="margin: 0; flex: 1;" placeholder="🔎 تصفية الجدول الرئيسي بالاسم، أو رقم الجلوس (يدعم *)..." oninput="handleMainWildcardSearch()">
-            <button id="toggleRepeatersBtn" class="btn-danger" style="padding: 12px 20px; border-radius: 10px; margin: 0;" onclick="toggleRepeatersFilter()">🔻 القفز الي الباقين والفرص</button>
+            
+            <div style="position: relative; margin: 0;">
+                <button id="toggleFilterMenuBtn" class="btn-action" style="padding: 12px 20px; border-radius: 10px; background: var(--btn-purple);" onclick="toggleStatusFilterMenu()">🔻 تصفية بالحالة</button>
+                <div id="statusFilterMenu" class="custom-dropdown-menu" style="width: 260px; padding: 10px; text-align: right; top: 110%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-radius: 10px; background: rgba(255,255,255,0.98);">
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold; border-bottom: 1px solid #e0f7fa;"><input type="checkbox" class="status-filter-chk" value="مستجد" checked onchange="handleMainWildcardSearch()"> المستجدون</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold; border-bottom: 1px solid #e0f7fa;"><input type="checkbox" class="status-filter-chk" value="باق" checked onchange="handleMainWildcardSearch()"> الباقون للاعادة</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold; border-bottom: 1px solid #e0f7fa;"><input type="checkbox" class="status-filter-chk" value="فرصة اولي,فرصة أولى" checked onchange="handleMainWildcardSearch()"> فرصة أولى</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold; border-bottom: 1px solid #e0f7fa;"><input type="checkbox" class="status-filter-chk" value="فرصة ثاني" checked onchange="handleMainWildcardSearch()"> فرصة ثانية</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold; border-bottom: 1px solid #e0f7fa;"><input type="checkbox" class="status-filter-chk" value="فرصة ثالث" checked onchange="handleMainWildcardSearch()"> فرصة ثالثة</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold; border-bottom: 1px solid #e0f7fa;"><input type="checkbox" class="status-filter-chk" value="فرصة رابع" checked onchange="handleMainWildcardSearch()"> فرصة رابعة</label>
+                    <label style="display:flex; align-items:center; gap:8px; padding: 8px; cursor:pointer; font-weight:bold;"><input type="checkbox" class="status-filter-chk" value="مقيد" checked onchange="handleMainWildcardSearch()"> مقيد الحرية</label>
+                </div>
+            </div>
         </div>
         
         <div class="table-responsive">
@@ -352,34 +364,42 @@
                 <h3 style="margin-top: 0; color: #00838f;">أولاً: إعدادات درجات الرأفة التلقائية (للراسبين)</h3>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 15px;">
                     <div class="grace-ctrl-group" style="margin-bottom: 10px;">
-                        <span>رأفة المادة للمستجد:</span>
+                        <span>رأفة المادة للمستجد ومقيد الحرية:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshman', -1)">-</button>
                         <span id="lblFreshmanGrace" class="grace-disp-val" style="color: #2e7d32;">6%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshman', 1)">+</button>
                     </div>
                     <div class="grace-ctrl-group" style="margin-bottom: 10px;">
-                        <span>سلة الرأفة الكلية للمستجد:</span>
+                        <span>سلة الرأفة الكلية للمستجد ومقيد الحرية:</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshmanBasket', -1)">-</button>
                         <span id="lblFreshmanGraceBasket" class="grace-disp-val" style="color: #2e7d32;">2%</span>
                         <button class="btn-mini" onclick="changeGraceLimit('freshmanBasket', 1)">+</button>
                     </div>
                     <div style="width: 100%; border-top: 1px solid #b2ebf2; margin: 5px 0;"></div>
-                    <div class="grace-ctrl-group">
-                        <span>رأفة المادة للباقي للإعادة:</span>
-                        <button class="btn-mini" onclick="changeGraceLimit('repeater', -1)">-</button>
-                        <span id="lblRepeaterGrace" class="grace-disp-val" style="color: #2e7d32;">10%</span>
-                        <button class="btn-mini" onclick="changeGraceLimit('repeater', 1)">+</button>
-                    </div>
-                    <div class="grace-ctrl-group">
-                        <span>سلة الرأفة الكلية للباقي:</span>
-                        <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', -1)">-</button>
-                        <span id="lblRepeaterGraceBasket" class="grace-disp-val" style="color: #2e7d32;">4%</span>
-                        <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', 1)">+</button>
+                    
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size: 16px; font-weight: bold; width: 100%; color: #006064;">
+                        <input type="checkbox" id="chkAtRiskGrace" checked onchange="toggleAtRiskGrace()">
+                        تحديد الطالب المعرض للفصل (باقي - مستجد بفرصة - فرصة أولى - ثانية - ثالثة) وتطبيق رأفة خاصة به
+                    </label>
+
+                    <div id="atRiskGraceControls" style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; width: 100%; margin-top: 10px;">
+                        <div class="grace-ctrl-group">
+                            <span>رأفة المادة للمعرض للفصل:</span>
+                            <button class="btn-mini" onclick="changeGraceLimit('repeater', -1)">-</button>
+                            <span id="lblRepeaterGrace" class="grace-disp-val" style="color: #2e7d32;">10%</span>
+                            <button class="btn-mini" onclick="changeGraceLimit('repeater', 1)">+</button>
+                        </div>
+                        <div class="grace-ctrl-group">
+                            <span>سلة الرأفة الكلية للمعرض للفصل:</span>
+                            <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', -1)">-</button>
+                            <span id="lblRepeaterGraceBasket" class="grace-disp-val" style="color: #2e7d32;">3%</span>
+                            <button class="btn-mini" onclick="changeGraceLimit('repeaterBasket', 1)">+</button>
+                        </div>
                     </div>
                 </div>
                 <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-size: 16px; font-weight: bold; color: #b71c1c;">
-                    <input type="checkbox" id="chkExcludeZeroWritten" onchange="triggerReRender()">
-                    استثناء (صفر تحريري / الغياب) من درجات الرأفة والرفع اليدوي
+                    <input type="checkbox" id="chkExcludeZeroWritten" onchange="triggerReRender()" checked>
+                    استثناء (صفر تحريري / الغياب) من الرفع اليدوي
                 </label>
             </div>
             <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -629,6 +649,7 @@
         let chartInstance = null; 
         
         let engineConfig = { applyBulk: true, applyGrace: true, applyUpgrade: true };
+        let applyAtRiskGrace = true;
 
         const defaultSubjects = ['رياضيات', 'فيزياء', 'ميكانيكا', 'الرسم الهندسي', 'حاسب', 'تكنولوجيا', 'كيمياء', 'انجليزي', 'تاريخ'];
         let mappedSubjects = [...defaultSubjects];
@@ -659,7 +680,7 @@
         let freshmanGraceLimitPct = 6;
         let repeaterGraceLimitPct = 10;
         let freshmanGraceBasketPct = 2;
-        let repeaterGraceBasketPct = 4;
+        let repeaterGraceBasketPct = 3;
         let subjectUpgradeLimitPct = 1;
         let overallUpgradeLimitPct = 0;
         
@@ -695,29 +716,54 @@
             if(currentRenderedData.length > 0) handleMainWildcardSearch(); 
         }
 
-        function toggleRepeatersFilter() {
-            showingOnlyRepeaters = !showingOnlyRepeaters;
-            let btn = document.getElementById('toggleRepeatersBtn');
-            if (showingOnlyRepeaters) {
-                btn.innerHTML = '🔺 إظهار الكل';
-                btn.className = 'btn-action';
-                btn.style.background = 'var(--btn-blue-green)';
-            } else {
-                btn.innerHTML = '🔻 القفز الي الباقين والفرص';
-                btn.className = 'btn-danger';
-                btn.style.background = 'var(--btn-red)';
-            }
-            handleMainWildcardSearch();
+        function toggleAtRiskGrace() {
+            applyAtRiskGrace = document.getElementById('chkAtRiskGrace').checked;
+            document.getElementById('atRiskGraceControls').style.opacity = applyAtRiskGrace ? '1' : '0.5';
+            document.getElementById('atRiskGraceControls').style.pointerEvents = applyAtRiskGrace ? 'auto' : 'none';
+            triggerReRender();
         }
+
+        function toggleStatusFilterMenu() {
+            let menu = document.getElementById('statusFilterMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function(event) {
+            let menu = document.getElementById('statusFilterMenu');
+            let btn = document.getElementById('toggleFilterMenuBtn');
+            if (menu && menu.style.display === 'block' && !menu.contains(event.target) && event.target !== btn) {
+                menu.style.display = 'none';
+            }
+        });
 
         function handleMainWildcardSearch() {
             let searchStr = document.getElementById('mainSearchInput').value.trim();
             let dataToFilter = Object.values(studentsDatabase).sort(sortStudents);
             
-            if (showingOnlyRepeaters) {
+            let checkedBoxes = Array.from(document.querySelectorAll('.status-filter-chk:checked'));
+            let allBoxesCount = document.querySelectorAll('.status-filter-chk').length;
+            
+            if (checkedBoxes.length === 0) {
+                renderMainTable([]);
+                return;
+            }
+            
+            if (checkedBoxes.length < allBoxesCount) {
+                let allowedValues = checkedBoxes.map(cb => cb.value.split(',')).flat();
                 dataToFilter = dataToFilter.filter(st => {
                     let s = st.status || "";
-                    return s.includes("باق") || s.includes("فرصة") || s.includes("مقيد");
+                    let match = false;
+                    if (!s && allowedValues.includes('باق')) {
+                        match = true; 
+                    }
+                    for (let val of allowedValues) {
+                        if (val === 'مستجد') {
+                            if (s.includes('مستجد') && !s.includes('فرص')) { match = true; break; }
+                        } else if (s.includes(val)) {
+                            match = true; break;
+                        }
+                    }
+                    return match;
                 });
             }
 
@@ -1543,11 +1589,13 @@
                     let failedCoreCount = 0, failedHumCount = 0;
 
                     let isRepeater = statStr.includes("باق");
-                    let isForsa = statStr.includes("فرصة");
+                    let isForsa = statStr.includes("فرص");
                     let isMokayed = statStr.includes("مقيد");
+                    let isAtRiskStudent = statStr.includes("باق") || statStr.includes("فرص");
+                    let applyAtRiskRules = applyAtRiskGrace && isAtRiskStudent;
 
-                    let activeGraceSubjPct = isRepeater ? repGraceSubjPct : regGraceSubjPct;
-                    let activeGraceBskPct = isRepeater ? repGraceBskPct : regGraceBskPct;
+                    let activeGraceSubjPct = applyAtRiskRules ? repGraceSubjPct : regGraceSubjPct;
+                    let activeGraceBskPct = applyAtRiskRules ? repGraceBskPct : regGraceBskPct;
                     let activeSubjUpgradePct = currentSubjectUpgradeLimitPct;
 
                     // --- PASS 1: Calculate Base Scores, Fails, and Max Totals ---
@@ -1605,6 +1653,9 @@
                         }
 
                         let valTotPr = parseFloat(actual.total?.prac) || 0;
+                        let valT1Pr = parseFloat(actual.t1?.prac) || 0;
+                        let valT2Pr = parseFloat(actual.t2?.prac) || 0;
+                        
                         if (hasPractical) {
                             let bPr = allowBulk ? (bulkPracAdditions[subject] || {t1:0, t2:0, total:0}) : {t1:0, t2:0, total:0};
                             if (isContinuous) {
@@ -1701,7 +1752,7 @@
                             }
                         }
 
-                        let isCapped = isRepeater && student._capRepeater && student._capRepeater[subject];
+                        let isCapped = isAtRiskStudent && student._capRepeater && student._capRepeater[subject];
                         if (isCapped) {
                             let capLimit = Math.floor(maxScore * 0.64);
                             if (finalScore > capLimit) { finalScore = capLimit; }
@@ -1750,10 +1801,6 @@
                               if (res.passedStatusText && !res.evaluateHalf) return;
 
                               let canApplyGrace = true;
-                              if (excludeZeroWrittenFromBulk && (res.valTotW === 0 || res.valTotW === '-')) {
-                                  canApplyGrace = false; 
-                              }
-
                               if (res.isFailing && !res.isBylawFail && !res.currentIsAbsent && !res.isCapped && canApplyGrace) {
                                    let requiredMarks = Math.ceil(res.maxScore * 0.50) - res.finalScore;
                                    let maxAllowedPerSubject = (res.maxScore * activeGraceSubjPct) / 100;
@@ -2014,11 +2061,11 @@
                         if (isForsa && !currentIsAbsent) rawWrittenForTooltip = valTotPr + valTotW;
                         let scaledMokayedScore = finalScore;
 
-                        let isCapped = isRepeater && student._capRepeater && student._capRepeater[subject];
+                        let isCapped = isAtRiskStudent && student._capRepeater && student._capRepeater[subject];
                         let wasActuallyCapped = false;
                         let capBtnHtml = '';
                         
-                        if (isRepeater && finalScore > 0) {  
+                        if (isAtRiskStudent && finalScore > 0) {  
                               let btnClass = isCapped ? 'cap-btn active' : 'cap-btn inactive';  
                               capBtnHtml = `<button class="${btnClass}" onclick="toggleRepeaterCap(${studentIndex}, '${subject}')" title="تفعيل/إلغاء تخفيض الرأفة 64%">🎯</button>`;
                         }
@@ -2270,7 +2317,7 @@
                     let statusClass = "text-passed";
 
                     if (isTotallyAbsent) {
-                        statusText = isRepeater ? "غائب ويفصل" : "غائب";
+                        statusText = isAtRiskStudent ? "غائب ويفصل" : "غائب";
                         statusClass = "grade-bylaw";
                     } else {
                         if (totalFails === 0) { 
@@ -2281,7 +2328,7 @@
                         else if (totalFails === 2) { statusText = "منقول بمادتين"; statusClass = "status-transfer"; } 
                         else if (failedCoreCount === 2 && failedHumCount === 1) { statusText = "منقول بمادتين + مادة انسانية"; statusClass = "status-transfer"; } 
                         else { 
-                            statusText = isRepeater ? "راسب ويفصل" : "راسب"; 
+                            statusText = isAtRiskStudent ? "راسب ويفصل" : "راسب"; 
                             statusClass = "grade-bylaw"; 
                         }
                     }
@@ -2982,13 +3029,17 @@
         function resetSystemData() {
             studentsDatabase = {}; currentRenderedData = []; bulkAdditions = {}; bulkYWAdditions = {}; bulkPracAdditions = {}; hiddenCols.clear(); updateDynamicStyles(); globalFilesStore = {};
             dynamicContinuousSubjects = []; chartShowPercentage = false; freshmanGraceLimitPct = 6; repeaterGraceLimitPct = 10;
-            freshmanGraceBasketPct = 2; repeaterGraceBasketPct = 4; subjectUpgradeLimitPct = 1; overallUpgradeLimitPct = 0;
+            freshmanGraceBasketPct = 2; repeaterGraceBasketPct = 3; subjectUpgradeLimitPct = 1; overallUpgradeLimitPct = 0;
             humanitiesSubjectsKeys = ['تاريخ', 'انجليزي'];
             engineConfig = { applyBulk: true, applyGrace: true, applyUpgrade: true };
+            applyAtRiskGrace = true;
+            document.getElementById('chkAtRiskGrace').checked = true;
+            document.getElementById('atRiskGraceControls').style.opacity = '1';
+            document.getElementById('atRiskGraceControls').style.pointerEvents = 'auto';
             document.getElementById('lblFreshmanGrace').innerText = '6%';
             document.getElementById('lblRepeaterGrace').innerText = '10%';
             document.getElementById('lblFreshmanGraceBasket').innerText = '2%';
-            document.getElementById('lblRepeaterGraceBasket').innerText = '4%';
+            document.getElementById('lblRepeaterGraceBasket').innerText = '3%';
             document.getElementById('lblSubjectUpgrade').innerText = '1%';
             document.getElementById('lblOverallUpgrade').innerText = '0%';
             document.getElementById('chkExcludeZeroWritten').checked = false;
