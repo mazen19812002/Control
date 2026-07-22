@@ -91,7 +91,9 @@
         .grace-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #28a745; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
         .upgrade-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #1976d2; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
         .cap-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #e67e22; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
-        .mokayed-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: #1976D2; color: #fff; font-size: 14px; font-weight: bold; padding: 2px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; text-shadow: none; }
+        
+        .mokayed-badge { display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; background: rgba(233, 30, 99, 0.15); color: #ad1457; font-size: 15px; font-weight: 900; padding: 2px 8px; box-shadow: 0 4px 10px rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); white-space: nowrap; text-shadow: none; }
+        
         .grace-original { font-size: 13px; text-decoration: line-through; color: #d32f2f; margin-top: 4px; font-weight: 900; opacity: 0.8;}
         td.upgrade-cell { background-color: #e3f2fd !important; color: #0d47a1 !important; }
         .grade-excellent { color: #01579b; font-weight: 900; text-shadow: 0px 0px 1px rgba(1,87,155,0.2); }
@@ -174,7 +176,7 @@
             .fail-highlight { border-color: #d32f2f; color: #d32f2f; box-shadow: none; background: transparent; padding: 1px 3px;}
             .cap-highlight { border-color: #1976d2; color: #1976d2; box-shadow: none; background: transparent; padding: 1px 3px;}
             .grace-badge { background-color: #28a745 !important; color: white !important; padding: 1px 4px; box-shadow: none; }
-            .mokayed-badge { background-color: #ec407a !important; color: white !important; padding: 1px 4px; box-shadow: none; display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap; text-shadow: none; }
+            .mokayed-badge { background-color: #fce4ec !important; color: #ad1457 !important; border: 1px solid #f48fb1 !important; padding: 1px 4px; box-shadow: none; display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap; text-shadow: none; }
             .cap-badge { background-color: #e67e22 !important; color: white !important; padding: 1px 4px; box-shadow: none; display: inline-flex; justify-content: center; align-items: center; min-width: 26px; height: 26px; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap; text-shadow: none; }
             .grace-original { color: #000 !important; font-size: 10px !important;}
             .text-passed { font-size: 10px !important; color: #000 !important; }
@@ -1633,7 +1635,11 @@
                             if (evaluateHalf) maxPrac = maxPrac / 2;
                             let maxNonYw = currentMaxWrit + maxPrac;
                             if (maxNonYw > 0) {
-                                finalScore = Math.ceil((((valTotPr + valTotW) / maxNonYw) * maxScore) * 2) / 2;
+                                let calculated = (((valTotPr + valTotW) / maxNonYw) * maxScore);
+                                let remainder = calculated % 1;
+                                if (remainder > 0 && remainder <= 0.5) finalScore = Math.floor(calculated) + 0.5;
+                                else if (remainder > 0.5) finalScore = Math.ceil(calculated);
+                                else finalScore = calculated;
                             } else {
                                 finalScore = valTotPr + valTotW;
                             }
@@ -1641,7 +1647,11 @@
                             valTotYw = 0;
                             valTotPr = 0;
                             if (currentMaxWrit > 0) {
-                                finalScore = Math.ceil(((valTotW / currentMaxWrit) * maxScore) * 2) / 2;
+                                let calculated = ((valTotW / currentMaxWrit) * maxScore);
+                                let remainder = calculated % 1;
+                                if (remainder > 0 && remainder <= 0.5) finalScore = Math.floor(calculated) + 0.5;
+                                else if (remainder > 0.5) finalScore = Math.ceil(calculated);
+                                else finalScore = calculated;
                             } else {
                                 finalScore = valTotW;
                             }
@@ -1932,13 +1942,21 @@
                             if (evaluateHalf) maxPrac = maxPrac / 2;
                             let maxNonYw = currentMaxWrit + maxPrac;
                             if (maxNonYw > 0) {
-                                finalScore = Math.ceil((((valTotPr + valTotW) / maxNonYw) * maxScore) * 2) / 2;
+                                let calculated = (((valTotPr + valTotW) / maxNonYw) * maxScore);
+                                let remainder = calculated % 1;
+                                if (remainder > 0 && remainder <= 0.5) finalScore = Math.floor(calculated) + 0.5;
+                                else if (remainder > 0.5) finalScore = Math.ceil(calculated);
+                                else finalScore = calculated;
                             } else {
                                 finalScore = valTotPr + valTotW;
                             }
                         } else if (isMokayed && !currentIsAbsent) {
                             if (currentMaxWrit > 0) {
-                                finalScore = Math.ceil(((valTotW / currentMaxWrit) * maxScore) * 2) / 2;
+                                let calculated = ((valTotW / currentMaxWrit) * maxScore);
+                                let remainder = calculated % 1;
+                                if (remainder > 0 && remainder <= 0.5) finalScore = Math.floor(calculated) + 0.5;
+                                else if (remainder > 0.5) finalScore = Math.ceil(calculated);
+                                else finalScore = calculated;
                             } else {
                                 finalScore = valTotW;
                             }
@@ -2026,15 +2044,20 @@
                         let subjectIsFailed = false;
                         let graceAdded = 0; let upgradeAdded = 0;
 
+                        let isSpecialCalculated = (isMokayed || isForsa) && !currentIsAbsent;
+
                         if (passedStatusText && !evaluateHalf) {
                             tdGrade.innerHTML = `<span class="text-passed">${passedStatusText}</span>`;
                             internalStatsGrade = 'سبق نجاحه';
                             if (finalScore > 0) {
                                 let displayScore = finalScore;
-                                if ((isMokayed || isForsa) && !currentIsAbsent) {
+                                if (isSpecialCalculated) {
                                     displayScore = `<div class="mokayed-tooltip">
-                                                        <span class="mokayed-badge" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
-                                                        <span class="grace-original">${rawWrittenForTooltip}</span>
+                                                        <div class="grace-wrapper">
+                                                            <span class="mokayed-badge" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
+                                                            <span class="grace-original">${rawWrittenForTooltip}</span>
+                                                        </div>
+                                                        <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
                                                     </div>`;
                                 }
                                 tdTotal.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between;"><span></span><span>${displayScore}</span>${capBtnHtml}</div>`;
@@ -2097,17 +2120,45 @@
                             } else if (isBylawFailing) {
                                 tdTotal.classList.add('fail-cell'); tdGrade.classList.add('fail-cell');
                                 displayScore = `<span class="fail-highlight">${displayScore}</span>`;
+                                if (isSpecialCalculated) {
+                                    displayScore = `<div class="mokayed-tooltip">
+                                                        <div class="grace-wrapper">
+                                                            <span class="fail-highlight" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
+                                                            <span class="grace-original">${rawWrittenForTooltip}</span>
+                                                        </div>
+                                                        <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
+                                                    </div>`;
+                                }
                                 displayGrade = "ر ل"; tdGrade.className = `subject-grade ${subCls} grade-bylaw`;
                                 subjectIsFailed = true; internalStatsGrade = 'راسب لائحة';
-                            } else if (isFailing) {
+                            } else if (isFailing && graceAdded === 0) {
                                 tdTotal.classList.add('fail-cell'); tdGrade.classList.add('fail-cell');
                                 displayScore = `<span class="fail-highlight">${displayScore}</span>`;
+                                if (isSpecialCalculated) {
+                                    displayScore = `<div class="mokayed-tooltip">
+                                                        <div class="grace-wrapper">
+                                                            <span class="fail-highlight" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
+                                                            <span class="grace-original">${rawWrittenForTooltip}</span>
+                                                        </div>
+                                                        <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
+                                                    </div>`;
+                                }
                                 subjectIsFailed = true; internalStatsGrade = gradeInfo.text; 
                             } else if (graceAdded > 0) {
                                 let raisedScore = finalScore + graceAdded;
                                 let raisedGradeInfo = getEgyptianGrade((raisedScore / maxScore) * 100);
                                 
-                                displayScore = `<div class="grace-wrapper"><span class="grace-badge">${raisedScore}</span><span class="grace-original">${finalScore}</span></div>`;
+                                if (isSpecialCalculated) {
+                                    displayScore = `<div class="mokayed-tooltip">
+                                                        <div class="grace-wrapper">
+                                                            <span class="grace-badge">${raisedScore}</span>
+                                                            <span class="mokayed-badge" style="text-decoration: line-through; opacity: 0.8; margin-top:4px; height: 20px; font-size: 12px; min-width: 20px; padding: 0 4px;">${scaledMokayedScore}</span>
+                                                        </div>
+                                                        <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
+                                                    </div>`;
+                                } else {
+                                    displayScore = `<div class="grace-wrapper"><span class="grace-badge">${raisedScore}</span><span class="grace-original">${finalScore}</span></div>`;
+                                }
                                 
                                 let raisedDisplayGrade = raisedGradeInfo.symbol;
                                 if (evaluateHalf) raisedDisplayGrade += ` <span class="text-passed">(${passedStatusText})</span>`;
@@ -2118,7 +2169,17 @@
                                 let raisedScore = finalScore + upgradeAdded;
                                 let raisedGradeInfo = getEgyptianGrade((raisedScore / maxScore) * 100);
                                 
-                                displayScore = `<div class="upgrade-wrapper"><span class="upgrade-badge">${raisedScore}</span><span class="grace-original">${finalScore}</span></div>`;
+                                if (isSpecialCalculated) {
+                                    displayScore = `<div class="mokayed-tooltip">
+                                                        <div class="upgrade-wrapper">
+                                                            <span class="upgrade-badge">${raisedScore}</span>
+                                                            <span class="mokayed-badge" style="text-decoration: line-through; opacity: 0.8; margin-top:4px; height: 20px; font-size: 12px; min-width: 20px; padding: 0 4px;">${scaledMokayedScore}</span>
+                                                        </div>
+                                                        <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
+                                                    </div>`;
+                                } else {
+                                    displayScore = `<div class="upgrade-wrapper"><span class="upgrade-badge">${raisedScore}</span><span class="grace-original">${finalScore}</span></div>`;
+                                }
                                 
                                 let raisedDisplayGrade = raisedGradeInfo.symbol;
                                 if (evaluateHalf) raisedDisplayGrade += ` <span class="text-passed">(${passedStatusText})</span>`;
@@ -2129,17 +2190,30 @@
                                 internalStatsGrade = raisedGradeInfo.text;
                             } else {
                                 if (wasActuallyCapped) {
-                                    displayScore = `<div class="upgrade-wrapper"><span class="cap-badge">${displayScore}</span><span class="grace-original">${uncappedScore}</span></div>`;
+                                    if (isSpecialCalculated) {
+                                        displayScore = `<div class="mokayed-tooltip">
+                                                            <div class="upgrade-wrapper">
+                                                                <span class="cap-badge">${displayScore}</span>
+                                                                <span class="mokayed-badge" style="text-decoration: line-through; opacity: 0.8; margin-top:4px; height: 20px; font-size: 12px; min-width: 20px; padding: 0 4px;">${uncappedScore}</span>
+                                                            </div>
+                                                            <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
+                                                        </div>`;
+                                    } else {
+                                        displayScore = `<div class="upgrade-wrapper"><span class="cap-badge">${displayScore}</span><span class="grace-original">${uncappedScore}</span></div>`;
+                                    }
                                     tdGrade.className = `subject-grade ${subCls} cap-grade`;
+                                } else {
+                                    if (isSpecialCalculated) {
+                                        displayScore = `<div class="mokayed-tooltip">
+                                                            <div class="grace-wrapper">
+                                                                <span class="mokayed-badge" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
+                                                                <span class="grace-original">${rawWrittenForTooltip}</span>
+                                                            </div>
+                                                            <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
+                                                        </div>`;
+                                    }
                                 }
                                 internalStatsGrade = gradeInfo.text;
-                            }
-                            
-                            if ((isMokayed || isForsa) && !currentIsAbsent && graceAdded === 0 && upgradeAdded === 0) {
-                                displayScore = `<div class="mokayed-tooltip">
-                                                    <span class="mokayed-badge" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
-                                                    <span class="grace-original">${rawWrittenForTooltip}</span>
-                                                </div>`;
                             }
                             
                             tdTotal.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between;"><span></span><span>${displayScore}</span>${capBtnHtml}</div>`; 
