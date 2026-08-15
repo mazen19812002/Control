@@ -1420,11 +1420,16 @@
                     let buffer = await file.arrayBuffer();
                     let wb = XLSX.read(buffer, { type: 'array' });
                     
-                    defaultSubjects.forEach((defSub, idx) => {
-                        let dispName = mappedSubjects[idx];
-                        let sheetName = wb.SheetNames.find(s => s === dispName.substring(0, 31));
+                    wb.SheetNames.forEach(sheetName => {
+                        let cleanSheet = sheetName.replace(/\s+/g, '');
+                        let matchedIdx = mappedSubjects.findIndex(dispName => cleanSheet.includes(dispName.replace(/\s+/g, '')) || dispName.replace(/\s+/g, '').includes(cleanSheet));
                         
-                        if (sheetName) {
+                        if (matchedIdx === -1) {
+                            matchedIdx = defaultSubjects.findIndex(defName => cleanSheet.includes(defName.replace(/\s+/g, '')) || defName.replace(/\s+/g, '').includes(cleanSheet));
+                        }
+                        
+                        if (matchedIdx !== -1) {
+                            let defSub = defaultSubjects[matchedIdx];
                             let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: 0 });
                             processExportedExcelRows(rows, defSub);
                         }
@@ -1433,7 +1438,7 @@
                 } else if (mode === 'upload_integrated') {
                     let fileInput = document.getElementById('uploadIntegratedFileInput');
                     if (fileInput.files.length === 0) {
-                        alert("يرجى اختيار ملف شيت_الكنترول_المجمع_المخصص.xlsx أولاً");
+                        alert("يرجى اختيار ملف شيت_الكنترول_المجمع_المخصص_2.xlsx أولاً");
                         document.getElementById('loader').style.display = 'none';
                         return;
                     }
@@ -1441,11 +1446,16 @@
                     let buffer = await file.arrayBuffer();
                     let wb = XLSX.read(buffer, { type: 'array' });
 
-                    defaultSubjects.forEach((defSub, idx) => {
-                        let dispName = mappedSubjects[idx];
-                        let sheetName = wb.SheetNames.find(s => s === dispName.substring(0, 31));
-
-                        if (sheetName) {
+                    wb.SheetNames.forEach(sheetName => {
+                        let cleanSheet = sheetName.replace(/\s+/g, '');
+                        let matchedIdx = mappedSubjects.findIndex(dispName => cleanSheet.includes(dispName.replace(/\s+/g, '')) || dispName.replace(/\s+/g, '').includes(cleanSheet));
+                        
+                        if (matchedIdx === -1) {
+                            matchedIdx = defaultSubjects.findIndex(defName => cleanSheet.includes(defName.replace(/\s+/g, '')) || defName.replace(/\s+/g, '').includes(cleanSheet));
+                        }
+                        
+                        if (matchedIdx !== -1) {
+                            let defSub = defaultSubjects[matchedIdx];
                             let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: 0 });
                             processExportedExcelRows(rows, defSub);
                         }
@@ -1453,20 +1463,25 @@
                     hasProcessedAnyFile = true;
                 } else if (mode === 'github_integrated') {
                     try {
-                        let response = await fetch("شيت_الكنترول_المجمع_المخصص.xlsx");
+                        let response = await fetch("شيت_الكنترول_المجمع_المخصص_2.xlsx");
                         if (!response.ok) {
                             document.getElementById('loader').style.display = 'none';
-                            alert("الملف المجمع غير موجود على السيرفر (شيت_الكنترول_المجمع_المخصص.xlsx).");
+                            alert("الملف المجمع غير موجود على السيرفر (شيت_الكنترول_المجمع_المخصص_2.xlsx).");
                             return;
                         }
                         let buffer = await response.arrayBuffer();
                         let wb = XLSX.read(buffer, { type: 'array' });
 
-                        defaultSubjects.forEach((defSub, idx) => {
-                            let dispName = mappedSubjects[idx];
-                            let sheetName = wb.SheetNames.find(s => s === dispName.substring(0, 31));
-
-                            if (sheetName) {
+                        wb.SheetNames.forEach(sheetName => {
+                            let cleanSheet = sheetName.replace(/\s+/g, '');
+                            let matchedIdx = mappedSubjects.findIndex(dispName => cleanSheet.includes(dispName.replace(/\s+/g, '')) || dispName.replace(/\s+/g, '').includes(cleanSheet));
+                            
+                            if (matchedIdx === -1) {
+                                matchedIdx = defaultSubjects.findIndex(defName => cleanSheet.includes(defName.replace(/\s+/g, '')) || defName.replace(/\s+/g, '').includes(cleanSheet));
+                            }
+                            
+                            if (matchedIdx !== -1) {
+                                let defSub = defaultSubjects[matchedIdx];
                                 let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: 0 });
                                 processExportedExcelRows(rows, defSub);
                             }
@@ -1605,7 +1620,7 @@
                 XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
             });
             
-            XLSX.writeFile(wb, "شيت_الكنترول_المجمع_المخصص.xlsx");
+            XLSX.writeFile(wb, "شيت_الكنترول_المجمع_المخصص_2.xlsx");
 
             engineConfig = { ...oldConfig };
             renderMainTable(currentRenderedData);
