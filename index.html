@@ -585,8 +585,7 @@
     </div>
     
     <button class="floating-btn" onclick="toggleUIVisibility()">👁️</button>
-
-    <script>
+<script>
         function sortStudents(a, b) {
             let numA = parseInt(a.seatNumber);
             let numB = parseInt(b.seatNumber);
@@ -709,6 +708,8 @@
             let mode = document.querySelector('input[name="readMode"]:checked').value;
             document.getElementById('dragDropArea').style.display = (mode === 'manual') ? 'flex' : 'none';
             document.getElementById('importExportedArea').style.display = (mode === 'import_exported') ? 'block' : 'none';
+            let integratedArea = document.getElementById('uploadIntegratedArea');
+            if (integratedArea) integratedArea.style.display = (mode === 'upload_integrated') ? 'block' : 'none';
             triggerReRender();
         }
 
@@ -1140,8 +1141,8 @@
                 let studentName = String(row["الاسم"] || row["اسم"] || '').trim();
                 let studentStatus = String(row["الحالة"] || 'باقي').trim();
                 
-                if (!seatNo && !studentName) return; 
-                
+                if (!seatNo && !studentName) return;
+                 
                 let primaryLookupKey = seatNo || studentName;
                 let matchedRecordKey = Object.keys(studentsDatabase).find(k => 
                     (seatNo && studentsDatabase[k].seatNumber === seatNo) || 
@@ -1423,6 +1424,27 @@
                         let dispName = mappedSubjects[idx];
                         let sheetName = wb.SheetNames.find(s => s === dispName.substring(0, 31));
                         
+                        if (sheetName) {
+                            let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: 0 });
+                            processExportedExcelRows(rows, defSub);
+                        }
+                    });
+                    hasProcessedAnyFile = true;
+                } else if (mode === 'upload_integrated') {
+                    let fileInput = document.getElementById('uploadIntegratedFileInput');
+                    if (fileInput.files.length === 0) {
+                        alert("يرجى اختيار ملف شيت_الكنترول_المجمع_المخصص.xlsx أولاً");
+                        document.getElementById('loader').style.display = 'none';
+                        return;
+                    }
+                    let file = fileInput.files[0];
+                    let buffer = await file.arrayBuffer();
+                    let wb = XLSX.read(buffer, { type: 'array' });
+
+                    defaultSubjects.forEach((defSub, idx) => {
+                        let dispName = mappedSubjects[idx];
+                        let sheetName = wb.SheetNames.find(s => s === dispName.substring(0, 31));
+
                         if (sheetName) {
                             let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: 0 });
                             processExportedExcelRows(rows, defSub);
@@ -2129,9 +2151,9 @@
                         let wasActuallyCapped = false;
                         let capBtnHtml = '';
                         
-                        if (applyAtRiskRules && finalScore > 0) {  
-                              let btnClass = isCapped ? 'cap-btn active' : 'cap-btn inactive';  
-                              capBtnHtml = `<button class="${btnClass}" onclick="toggleRepeaterCap(${studentIndex}, '${subject}')" title="تفعيل/إلغاء تخفيض الرأفة 64%">🎯</button>`;
+                        if (applyAtRiskRules && finalScore > 0) {
+                                let btnClass = isCapped ? 'cap-btn active' : 'cap-btn inactive';
+                                capBtnHtml = `<button class="${btnClass}" onclick="toggleRepeaterCap(${studentIndex}, '${subject}')" title="تفعيل/إلغاء تخفيض الرأفة 64%">🎯</button>`;
                         }
                         
                         let uncappedScore = finalScore;
@@ -2387,10 +2409,10 @@
                         if (totalFails === 0) { 
                             statusText = studentFinalGradeObj ? studentFinalGradeObj.text : "ناجح"; 
                             statusClass = studentFinalGradeObj ? studentFinalGradeObj.cssClass : "text-passed"; 
-                        } 
-                        else if (totalFails === 1) { statusText = "منقول بمادة"; statusClass = "status-transfer"; } 
-                        else if (totalFails === 2) { statusText = "منقول بمادتين"; statusClass = "status-transfer"; } 
-                        else if (failedCoreCount === 2 && failedHumCount === 1) { statusText = "منقول بمادتين + مادة انسانية"; statusClass = "status-transfer"; } 
+                        }
+                        else if (totalFails === 1) { statusText = "منقول بمادة"; statusClass = "status-transfer"; }
+                        else if (totalFails === 2) { statusText = "منقول بمادتين"; statusClass = "status-transfer"; }
+                        else if (failedCoreCount === 2 && failedHumCount === 1) { statusText = "منقول بمادتين + مادة انسانية"; statusClass = "status-transfer"; }
                         else { 
                             statusText = isAtRiskStudent ? "راسب ويفصل" : "راسب"; 
                             statusClass = "grade-bylaw"; 
@@ -2646,7 +2668,7 @@
                 let t1HasFiles = false;
                 let t2HasFiles = false;
 
-                if (mode === 'manual' || mode === 'import_exported') {
+                if (mode === 'manual' || mode === 'import_exported' || mode === 'upload_integrated') {
                     t1HasFiles = true; t2HasFiles = true;
                 } else {
                     let mapping = fileMapping[subName];
@@ -3057,8 +3079,8 @@
                     let detailStr = `<strong>${mappedName}</strong>: يحتاج <strong>${failedSubjects[i].needed}</strong> درجات`;
                     if (failedSubjects[i].reqWrit > 0) {
                         detailStr += ` (مطلوب للتحريري: ${failedSubjects[i].reqWrit})`;
-                    } else {
-                         detailStr += ` (عملي/أعمال/تحريري)`;
+                    } else { 
+                        detailStr += ` (عملي/أعمال/تحريري)`;
                     }
                     fixDetails.push(detailStr);
                 }
@@ -3140,5 +3162,7 @@
 
         window.onload = function() { initMappingTable(); }
     </script>
+
+    
 </body>
 </html>
