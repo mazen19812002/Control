@@ -608,6 +608,27 @@
             let numVal = isAbs ? 0 : parseFloat(val);
             if (!isAbs && isNaN(numVal)) numVal = 0;
 
+            let fb = getSubjectFallbackMaxes(subject);
+            let maxs = student.maxScores[subject] || {};
+            let maxLimit = 100;
+
+            // تحديد الحد الأقصى للمكون لمنع تجاوزه عند الإدخال اليدوي
+            if (term === 't1' || term === 't2') {
+                if (component === 'yw') maxLimit = actual[term]?.maxYW > 0 ? actual[term].maxYW : fb.yw / 2;
+                else if (component === 'prac') maxLimit = actual[term]?.maxPrac > 0 ? actual[term].maxPrac : fb.pr / 2;
+                else if (component === 'writ') {
+                    if (term === 't1') maxLimit = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fb.wr / 2);
+                    else maxLimit = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fb.wr : fb.wr / 2);
+                }
+            } else {
+                if (component === 'yw') maxLimit = maxs?.yearWork > 0 ? maxs.yearWork : fb.yw;
+                else if (component === 'prac') maxLimit = maxs?.practical > 0 ? maxs.practical : fb.pr;
+                else if (component === 'writ') maxLimit = maxs?.written > 0 ? maxs.written : fb.wr;
+            }
+
+            // تطبيق الحد الأقصى الصارم
+            if (!isAbs && numVal > maxLimit) numVal = maxLimit;
+
             if (term === 't1' || term === 't2') {
                 let tObj = actual[term];
                 if (!tObj) return;
@@ -1802,6 +1823,7 @@
                             valTotYw = (!actual.passedT1 ? cur1 : 0) + (!actual.passedT2 ? cur2 : 0);
                         } else {
                             let maxYw = maxs?.yearWork > 0 ? maxs.yearWork : fbLocal.yw;
+                            if (valTotYw > maxYw) valTotYw = maxYw;
                             if (bYw.total > 0 && actual.total?.yw !== undefined && actual.total?.yw !== '-') valTotYw += Math.min(bYw.total, maxYw - valTotYw);
                         }
 
@@ -1816,11 +1838,16 @@
                                 let t2PrMax = actual.t2?.maxPrac > 0 ? actual.t2.maxPrac : fbLocal.pr / 2;
                                 let cur1 = parseFloat(actual.t1?.prac) || 0;
                                 let cur2 = parseFloat(actual.t2?.prac) || 0;
+                                
+                                if (cur1 > t1PrMax) cur1 = t1PrMax;
+                                if (cur2 > t2PrMax) cur2 = t2PrMax;
+
                                 if (!actual.passedT1 && bPr.t1 > 0 && actual.t1?.prac !== undefined && actual.t1?.prac !== '-') cur1 += Math.min(bPr.t1, t1PrMax - cur1);
                                 if (!actual.passedT2 && bPr.t2 > 0 && actual.t2?.prac !== undefined && actual.t2?.prac !== '-') cur2 += Math.min(bPr.t2, t2PrMax - cur2);
                                 valTotPr = (!actual.passedT1 ? cur1 : 0) + (!actual.passedT2 ? cur2 : 0);
                             } else {
                                 let maxPr = maxs?.practical > 0 ? maxs.practical : fbLocal.pr;
+                                if (valTotPr > maxPr) valTotPr = maxPr;
                                 if (bPr.total > 0 && actual.total?.prac !== undefined && actual.total?.prac !== '-') valTotPr += Math.min(bPr.total, maxPr - valTotPr);
                             }
                         }
@@ -1869,13 +1896,15 @@
                             }
                             if (canApplyBulk) {
                                 let actualAdded = 0;
-                                let spaceTotal = maxScore - finalScore;
-                                if (spaceTotal < 0) spaceTotal = 0;
 
                                 if (isContinuous) {
                                     let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
                                     let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
-                                    let remainingBulk = Math.min(bulkAdd, spaceTotal);
+                                    
+                                    if (valT1W > t1WMax) valT1W = t1WMax;
+                                    if (valT2W > t2WMax) valT2W = t2WMax;
+
+                                    let remainingBulk = bulkAdd;
 
                                     if (!actual.t1?.isAbsent && !actual.passedT1) {
                                         let spaceT1 = t1WMax - valT1W;
@@ -1888,20 +1917,30 @@
                                         let spaceT2 = t2WMax - valT2W;
                                         if (spaceT2 > 0) {
                                             let addT2 = Math.min(remainingBulk, spaceT2);
-                                            valT2W += addT2; valTotW += addT2; actualAdded += addT2;
+                                            valT2W += addT2; valTotW += addT2; actualAdded += addT2; remainingBulk -= addT2;
                                         }
                                     }
                                 } else {
                                     if (!currentIsAbsent) {
+                                        if (valTotW > currentMaxWrit) valTotW = currentMaxWrit;
                                         let space = currentMaxWrit - valTotW;
                                         if (space > 0) {
-                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
+                                            actualAdded = Math.min(bulkAdd, space);
                                             valTotW += actualAdded;
                                         }
                                     }
                                 }
                                 finalScore += actualAdded;
                                 if (finalScore > maxScore) finalScore = maxScore;
+                            }
+                        } else {
+                            if (isContinuous) {
+                                let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
+                                let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
+                                if (valT1W > t1WMax) { valTotW -= (valT1W - t1WMax); valT1W = t1WMax; }
+                                if (valT2W > t2WMax) { valTotW -= (valT2W - t2WMax); valT2W = t2WMax; }
+                            } else {
+                                if (valTotW > currentMaxWrit) valTotW = currentMaxWrit;
                             }
                         }
 
@@ -2048,6 +2087,10 @@
                             if (isContinuous) {
                                 let t1YwMax = actual.t1?.maxYW > 0 ? actual.t1.maxYW : fbLocal.yw / 2;
                                 let t2YwMax = actual.t2?.maxYW > 0 ? actual.t2.maxYW : fbLocal.yw / 2;
+                                
+                                if (valT1Yw > t1YwMax) { valT1Yw = t1YwMax; dispT1Yw = valT1Yw; }
+                                if (valT2Yw > t2YwMax) { valT2Yw = t2YwMax; dispT2Yw = valT2Yw; }
+
                                 if (!actual.passedT1 && bYw.t1 > 0 && dispT1Yw !== undefined && dispT1Yw !== '-') {
                                     let added = Math.min(bYw.t1, t1YwMax - valT1Yw);
                                     if(added > 0) { valT1Yw += added; dispT1Yw = valT1Yw; }
@@ -2060,6 +2103,8 @@
                                 if(dispTotYw !== undefined && dispTotYw !== '-') dispTotYw = valTotYw;
                             } else {
                                 let maxYw = maxs?.yearWork > 0 ? maxs.yearWork : fbLocal.yw;
+                                if (valTotYw > maxYw) { valTotYw = maxYw; dispTotYw = valTotYw; }
+
                                 if (bYw.total > 0 && dispTotYw !== undefined && dispTotYw !== '-') {
                                     let added = Math.min(bYw.total, maxYw - valTotYw);
                                     if(added > 0) { valTotYw += added; dispTotYw = valTotYw; }
@@ -2109,6 +2154,10 @@
                                 if (isContinuous) {
                                     let t1PrMax = actual.t1?.maxPrac > 0 ? actual.t1.maxPrac : fbLocal.pr / 2;
                                     let t2PrMax = actual.t2?.maxPrac > 0 ? actual.t2.maxPrac : fbLocal.pr / 2;
+                                    
+                                    if (valT1Pr > t1PrMax) { valT1Pr = t1PrMax; dispT1Pr = valT1Pr; }
+                                    if (valT2Pr > t2PrMax) { valT2Pr = t2PrMax; dispT2Pr = valT2Pr; }
+
                                     if (!actual.passedT1 && bPr.t1 > 0 && dispT1Pr !== undefined && dispT1Pr !== '-') {
                                         let added = Math.min(bPr.t1, t1PrMax - valT1Pr);
                                         if(added > 0) { valT1Pr += added; dispT1Pr = valT1Pr; }
@@ -2121,6 +2170,8 @@
                                     if(dispTotPr !== undefined && dispTotPr !== '-') dispTotPr = valTotPr;
                                 } else {
                                     let maxPr = maxs?.practical > 0 ? maxs.practical : fbLocal.pr;
+                                    if (valTotPr > maxPr) { valTotPr = maxPr; dispTotPr = valTotPr; }
+
                                     if (bPr.total > 0 && dispTotPr !== undefined && dispTotPr !== '-') {
                                         let added = Math.min(bPr.total, maxPr - valTotPr);
                                         if(added > 0) { valTotPr += added; dispTotPr = valTotPr; }
@@ -2194,13 +2245,15 @@
                             
                             if (canApplyBulk) {
                                 let actualAdded = 0;
-                                let spaceTotal = maxScore - finalScore;
-                                if (spaceTotal < 0) spaceTotal = 0;
                                 
                                 if (isContinuous) {
                                     let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
                                     let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
-                                    let remainingBulk = Math.min(bulkAdd, spaceTotal);
+                                    
+                                    if (valT1W > t1WMax) { valT1W = t1WMax; dispT1w = valT1W; }
+                                    if (valT2W > t2WMax) { valT2W = t2WMax; dispT2w = valT2W; }
+
+                                    let remainingBulk = bulkAdd;
 
                                     if (!actual.t1?.isAbsent && !actual.passedT1) {
                                         let spaceT1 = t1WMax - valT1W;
@@ -2219,9 +2272,10 @@
                                     dispTotW = valTotW;
                                 } else {
                                     if (!currentIsAbsent) {
+                                        if (valTotW > currentMaxWrit) { valTotW = currentMaxWrit; dispTotW = valTotW; }
                                         let space = currentMaxWrit - valTotW;
                                         if (space > 0) {
-                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
+                                            actualAdded = Math.min(bulkAdd, space);
                                             valTotW += actualAdded; dispTotW = valTotW;
                                         }
                                     }
@@ -2229,6 +2283,16 @@
                                 
                                 finalScore += actualAdded;
                                 if (finalScore > maxScore) finalScore = maxScore; 
+                            }
+                        } else {
+                            if (isContinuous) {
+                                let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
+                                let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
+                                if (valT1W > t1WMax) { valTotW -= (valT1W - t1WMax); valT1W = t1WMax; dispT1w = valT1W; }
+                                if (valT2W > t2WMax) { valTotW -= (valT2W - t2WMax); valT2W = t2WMax; dispT2w = valT2W; }
+                                dispTotW = currentIsAbsent ? 'غ' : valTotW;
+                            } else {
+                                if (valTotW > currentMaxWrit) { valTotW = currentMaxWrit; dispTotW = valTotW; }
                             }
                         }
 
@@ -3254,6 +3318,6 @@
         }
 
         window.onload = function() { initMappingTable(); }
-    </script>    
+    </script> 
 </body>
 </html>
