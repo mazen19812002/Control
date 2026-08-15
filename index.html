@@ -602,6 +602,8 @@
             
             let actual = student.scores[subject];
             let val = newValue.trim();
+            
+            // تجاهل الإدخالات الفارغة أو نصوص النجاح الافتراضية
             if (val === '' || val === 'نجح' || val === 'سبق نجاحه') return;
             
             let isAbs = val === 'غ' || val === 'غائب';
@@ -670,6 +672,7 @@
                     else actual.absentTerms = 0;
                 }
                 
+                // إعادة حساب الإجماليات للمقرر الممتد لضمان جمع الدرجات المدخلة لغير المستجدين
                 actual.total.yw = (parseFloat(actual.t1?.yw) || 0) + (parseFloat(actual.t2?.yw) || 0);
                 actual.total.prac = (parseFloat(actual.t1?.prac) || 0) + (parseFloat(actual.t2?.prac) || 0);
                 let t1W = actual.t1?.isAbsent ? 0 : (parseFloat(actual.t1?.writ) || 0);
@@ -688,6 +691,7 @@
                 actual.total.tot = (parseFloat(actual.total.yw) || 0) + (parseFloat(actual.total.prac) || 0) + (parseFloat(actual.total.writ) || 0);
             }
             
+            // إعادة رسم الجدول وتطبيق القواعد بالكامل فوراً
             renderMainTable(currentRenderedData);
         };
 
@@ -1733,9 +1737,9 @@
             closeExportModal();
         }
 
-        function buildContinuousCell(t1Val, t2Val, totVal, evaluateHalf, passedT1, passedT2) {
-            let t1Str = passedT1 ? `<span class="text-passed">نجح</span>` : (t1Val !== undefined ? t1Val : '-');
-            let t2Str = passedT2 ? `<span class="text-passed">نجح</span>` : (t2Val !== undefined ? t2Val : '-');
+        function buildContinuousCell(t1Val, t2Val, totVal) {
+            let t1Str = t1Val !== undefined ? t1Val : '-';
+            let t2Str = t2Val !== undefined ? t2Val : '-';
             let tTot = totVal !== undefined ? totVal : '-';
             return `<div class="term-breakdown">
                         <div class="t-row">${t1Str}</div>
@@ -2168,7 +2172,8 @@
                             let isEdited = actualT && actualT[component + '_edited'];
                             let isTermRow = (term === 't1' || term === 't2');
                             
-                            if (isNonFreshman && (isZeroOrAbs || isEdited || (isPassedTerm && isTermRow) || isRecovered)) {
+                            // نفتح الخانات في صفوف الترم لغير المستجدين لحالات (صفر/غياب/تم التعديل/ناجح لم يتم تعديله/ناجح تم تعديله)
+                            if (isNonFreshman && isTermRow && (isZeroOrAbs || isEdited || isPassedTerm || isRecovered)) {
                                 let displayVal = val;
                                 if (isPassedTerm && !isEdited && !isRecovered && (val === '-' || val === undefined)) {
                                     displayVal = 'نجح';
@@ -2181,6 +2186,14 @@
                                 return `<input type="text" class="edit-grade-input print-hide" style="width:40px; ${colorStyle} font-weight:bold; text-align:center; ${bgStyle} font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onfocus="if(this.value==='نجح') this.value='';" onblur="if(this.value==='') this.value='نجح';" onchange="updateIndividualScore(${studentIndex}, '${subject}', '${term}', '${component}', this.value)">
                                         <span class="print-show" style="display:none; ${colorStyle}">${displayVal}</span>`;
                             }
+                            
+                            if (isNonFreshman && !isTermRow && (isZeroOrAbs || isEdited || isRecovered)) {
+                                let displayVal = val;
+                                if (val === 'غ' || val === 'غائب') displayVal = 'غ';
+                                return `<input type="text" class="edit-grade-input print-hide" style="width:40px; color:#c62828; font-weight:bold; text-align:center; background: #fff; border: 1px solid #00bcd4; font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onchange="updateIndividualScore(${studentIndex}, '${subject}', '${term}', '${component}', this.value)">
+                                        <span class="print-show" style="display:none; color:#c62828;">${displayVal}</span>`;
+                            }
+
                             if (isPassedTerm && !isRecovered) return '<span class="text-passed">نجح</span>';
                             return (val === 'غ' || val === 'غائب') ? '<span style="color:#c62828;">غ</span>' : val;
                         }
@@ -2191,7 +2204,7 @@
 
                         let tdYW = document.createElement('td'); tdYW.className = subCls;
                         if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw, evaluateHalf, false, false);
+                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw);
                         } else {
                             tdYW.innerHTML = (htmlTotYw !== undefined && htmlTotYw !== '-') ? htmlTotYw : '-';
                         }
@@ -2246,7 +2259,7 @@
 
                             tdPrac = document.createElement('td'); tdPrac.className = subCls;
                             if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr, evaluateHalf, false, false);
+                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr);
                             } else {
                                 tdPrac.innerHTML = (htmlTotPr !== undefined && htmlTotPr !== '-') ? htmlTotPr : '-';
                             }
@@ -2388,7 +2401,7 @@
 
                         let tdWrit = document.createElement('td'); tdWrit.className = subCls;
                         if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW, evaluateHalf, false, false);
+                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW);
                         } else {
                             tdWrit.innerHTML = (htmlTotW !== undefined && htmlTotW !== '-') ? htmlTotW : '-'; 
                         }
