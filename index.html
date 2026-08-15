@@ -612,7 +612,6 @@
             let maxs = student.maxScores[subject] || {};
             let maxLimit = 100;
 
-            // تحديد الحد الأقصى للمكون لمنع تجاوزه عند الإدخال اليدوي
             if (term === 't1' || term === 't2') {
                 if (component === 'yw') maxLimit = actual[term]?.maxYW > 0 ? actual[term].maxYW : fb.yw / 2;
                 else if (component === 'prac') maxLimit = actual[term]?.maxPrac > 0 ? actual[term].maxPrac : fb.pr / 2;
@@ -626,7 +625,6 @@
                 else if (component === 'writ') maxLimit = maxs?.written > 0 ? maxs.written : fb.wr;
             }
 
-            // تطبيق الحد الأقصى الصارم
             if (!isAbs && numVal > maxLimit) numVal = maxLimit;
 
             if (term === 't1' || term === 't2') {
@@ -645,6 +643,15 @@
                     else if (actual.t1.isAbsent || actual.t2.isAbsent) actual.absentTerms = 1;
                     else actual.absentTerms = 0;
                 }
+                
+                // إعادة حساب الإجماليات للمقرر الممتد لضمان جمع الدرجات المضافة لغير المستجدين
+                actual.total.yw = (parseFloat(actual.t1?.yw) || 0) + (parseFloat(actual.t2?.yw) || 0);
+                actual.total.prac = (parseFloat(actual.t1?.prac) || 0) + (parseFloat(actual.t2?.prac) || 0);
+                let t1W = actual.t1?.isAbsent ? 0 : (parseFloat(actual.t1?.writ) || 0);
+                let t2W = actual.t2?.isAbsent ? 0 : (parseFloat(actual.t2?.writ) || 0);
+                actual.total.writ = t1W + t2W;
+                actual.isAbsent = actual.t1?.isAbsent && actual.t2?.isAbsent;
+                actual.total.tot = actual.total.yw + actual.total.prac + actual.total.writ;
             } else {
                 if (component === 'writ') {
                     actual.isAbsent = isAbs;
@@ -653,9 +660,9 @@
                     actual.total[component] = numVal;
                 }
                 actual.total[component + '_edited'] = true;
+                actual.total.tot = (parseFloat(actual.total.yw) || 0) + (parseFloat(actual.total.prac) || 0) + (parseFloat(actual.total.writ) || 0);
             }
             
-            // إعادة رسم الجدول وتطبيق القواعد بالكامل فوراً
             renderMainTable(currentRenderedData);
         };
 
@@ -1811,13 +1818,22 @@
                         
                         let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
                         let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
-                        let valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
+                        let valTotW = 0;
+                        if (isContinuous) {
+                            valTotW = (!actual.passedT1 ? valT1W : 0) + (!actual.passedT2 ? valT2W : 0);
+                        } else {
+                            valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
+                        }
                         
                         if (isContinuous) {
                             let t1YwMax = actual.t1?.maxYW > 0 ? actual.t1.maxYW : fbLocal.yw / 2;
                             let t2YwMax = actual.t2?.maxYW > 0 ? actual.t2.maxYW : fbLocal.yw / 2;
                             let cur1 = parseFloat(actual.t1?.yw) || 0;
                             let cur2 = parseFloat(actual.t2?.yw) || 0;
+                            
+                            if (cur1 > t1YwMax) cur1 = t1YwMax;
+                            if (cur2 > t2YwMax) cur2 = t2YwMax;
+
                             if (!actual.passedT1 && bYw.t1 > 0 && actual.t1?.yw !== undefined && actual.t1?.yw !== '-') cur1 += Math.min(bYw.t1, t1YwMax - cur1);
                             if (!actual.passedT2 && bYw.t2 > 0 && actual.t2?.yw !== undefined && actual.t2?.yw !== '-') cur2 += Math.min(bYw.t2, t2YwMax - cur2);
                             valTotYw = (!actual.passedT1 ? cur1 : 0) + (!actual.passedT2 ? cur2 : 0);
@@ -2192,10 +2208,14 @@
                             tr.appendChild(tdPrac);
                         }
                         
-                        let baseObj = subjectsBaseData[subject] || {};
-                        let valT1W = baseObj.valT1W !== undefined ? baseObj.valT1W : 0;
-                        let valT2W = baseObj.valT2W !== undefined ? baseObj.valT2W : 0;
-                        let valTotW = baseObj.valTotW !== undefined ? baseObj.valTotW : 0;
+                        let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
+                        let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
+                        let valTotW = 0;
+                        if (isContinuous) {
+                            valTotW = (!actual.passedT1 ? valT1W : 0) + (!actual.passedT2 ? valT2W : 0);
+                        } else {
+                            valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
+                        }
                         
                         let dispT1w = actual.t1?.isAbsent ? 'غ' : actual.t1?.writ;
                         if (subject === 'الرسم الهندسي') { dispT1w = '-'; }
@@ -3318,6 +3338,6 @@
         }
 
         window.onload = function() { initMappingTable(); }
-    </script> 
+    </script>
 </body>
 </html>
