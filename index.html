@@ -2191,7 +2191,7 @@
 
                         let tdYW = document.createElement('td'); tdYW.className = subCls;
                         if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw, evaluateHalf, actual.passedT1 && !actual.t1?.recovered, actual.passedT2 && !actual.t2?.recovered);
+                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw, evaluateHalf, false, false);
                         } else {
                             tdYW.innerHTML = (htmlTotYw !== undefined && htmlTotYw !== '-') ? htmlTotYw : '-';
                         }
@@ -2246,7 +2246,7 @@
 
                             tdPrac = document.createElement('td'); tdPrac.className = subCls;
                             if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr, evaluateHalf, actual.passedT1 && !actual.t1?.recovered, actual.passedT2 && !actual.t2?.recovered);
+                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr, evaluateHalf, false, false);
                             } else {
                                 tdPrac.innerHTML = (htmlTotPr !== undefined && htmlTotPr !== '-') ? htmlTotPr : '-';
                             }
@@ -2325,7 +2325,7 @@
                                         let spaceT1 = t1WMax - valT1W;
                                         if (spaceT1 > 0) {
                                             let addT1 = Math.min(remainingBulk, spaceT1);
-                                            valT1W += addT1; valTotW += addT1; actualAdded += addT1; remainingBulk -= addT1;
+                                            valT1W += addT1; dispT1w = valT1W; valTotW += addT1; actualAdded += addT1; remainingBulk -= addT1;
                                         }
                                     }
                                     if (remainingBulk > 0 && !actual.passedT2 && !actual.t2?.isAbsent) {
@@ -2388,7 +2388,7 @@
 
                         let tdWrit = document.createElement('td'); tdWrit.className = subCls;
                         if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW, evaluateHalf, actual.passedT1 && !actual.t1?.recovered, actual.passedT2 && !actual.t2?.recovered);
+                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW, evaluateHalf, false, false);
                         } else {
                             tdWrit.innerHTML = (htmlTotW !== undefined && htmlTotW !== '-') ? htmlTotW : '-'; 
                         }
