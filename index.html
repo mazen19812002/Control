@@ -605,64 +605,87 @@
             if (val === '') return;
             
             let isAbs = val === 'غ' || val === 'غائب';
-            let numVal = isAbs ? 0 : parseFloat(val);
-            if (!isAbs && isNaN(numVal)) numVal = 0;
-
-            let fb = getSubjectFallbackMaxes(subject);
-            let maxs = student.maxScores[subject] || {};
-            let maxLimit = 100;
-
-            if (term === 't1' || term === 't2') {
-                if (component === 'yw') maxLimit = actual[term]?.maxYW > 0 ? actual[term].maxYW : fb.yw / 2;
-                else if (component === 'prac') maxLimit = actual[term]?.maxPrac > 0 ? actual[term].maxPrac : fb.pr / 2;
-                else if (component === 'writ') {
-                    if (term === 't1') maxLimit = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fb.wr / 2);
-                    else maxLimit = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fb.wr : fb.wr / 2);
-                }
-            } else {
-                if (component === 'yw') maxLimit = maxs?.yearWork > 0 ? maxs.yearWork : fb.yw;
-                else if (component === 'prac') maxLimit = maxs?.practical > 0 ? maxs.practical : fb.pr;
-                else if (component === 'writ') maxLimit = maxs?.written > 0 ? maxs.written : fb.wr;
-            }
-
-            if (!isAbs && numVal > maxLimit) numVal = maxLimit;
-
-            if (term === 't1' || term === 't2') {
-                let tObj = actual[term];
-                if (!tObj) return;
-                if (component === 'writ') {
-                    tObj.isAbsent = isAbs;
-                    tObj.writ = isAbs ? '-' : numVal;
-                } else {
-                    tObj[component] = numVal;
-                }
-                tObj[component + '_edited'] = true;
+            let isPassedText = val === 'نجح' || val === 'سبق نجاحه';
+            
+            // إذا أعاد إدخال النص الأصلي للنجاح، يتم إعادة تفعيل حالة "سبق نجاحه"
+            if (isPassedText) {
+                if (term === 't1') actual.passedT1 = true;
+                else if (term === 't2') actual.passedT2 = true;
+                else if (term === 'total') actual.passedT1 = true; 
                 
-                if (actual.t1 && actual.t2) {
-                    if (actual.t1.isAbsent && actual.t2.isAbsent) actual.absentTerms = 2;
-                    else if (actual.t1.isAbsent || actual.t2.isAbsent) actual.absentTerms = 1;
-                    else actual.absentTerms = 0;
-                }
-                
-                // إعادة حساب الإجماليات للمقرر الممتد لضمان جمع الدرجات المضافة لغير المستجدين
-                actual.total.yw = (parseFloat(actual.t1?.yw) || 0) + (parseFloat(actual.t2?.yw) || 0);
-                actual.total.prac = (parseFloat(actual.t1?.prac) || 0) + (parseFloat(actual.t2?.prac) || 0);
-                let t1W = actual.t1?.isAbsent ? 0 : (parseFloat(actual.t1?.writ) || 0);
-                let t2W = actual.t2?.isAbsent ? 0 : (parseFloat(actual.t2?.writ) || 0);
-                actual.total.writ = t1W + t2W;
-                actual.isAbsent = actual.t1?.isAbsent && actual.t2?.isAbsent;
-                actual.total.tot = actual.total.yw + actual.total.prac + actual.total.writ;
+                let tObj = term === 'total' ? actual.total : actual[term];
+                tObj[component + '_edited'] = false;
             } else {
-                if (component === 'writ') {
-                    actual.isAbsent = isAbs;
-                    actual.total.writ = isAbs ? 0 : numVal;
+                let numVal = isAbs ? 0 : parseFloat(val);
+                if (!isAbs && isNaN(numVal)) numVal = 0;
+
+                let fb = getSubjectFallbackMaxes(subject);
+                let maxs = student.maxScores[subject] || {};
+                let maxLimit = 100;
+
+                // تحديد الحد الأقصى للمكون لمنع تجاوزه عند الإدخال اليدوي
+                if (term === 't1' || term === 't2') {
+                    if (component === 'yw') maxLimit = actual[term]?.maxYW > 0 ? actual[term].maxYW : fb.yw / 2;
+                    else if (component === 'prac') maxLimit = actual[term]?.maxPrac > 0 ? actual[term].maxPrac : fb.pr / 2;
+                    else if (component === 'writ') {
+                        if (term === 't1') maxLimit = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fb.wr / 2);
+                        else maxLimit = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fb.wr : fb.wr / 2);
+                    }
                 } else {
-                    actual.total[component] = numVal;
+                    if (component === 'yw') maxLimit = maxs?.yearWork > 0 ? maxs.yearWork : fb.yw;
+                    else if (component === 'prac') maxLimit = maxs?.practical > 0 ? maxs.practical : fb.pr;
+                    else if (component === 'writ') maxLimit = maxs?.written > 0 ? maxs.written : fb.wr;
                 }
-                actual.total[component + '_edited'] = true;
-                actual.total.tot = (parseFloat(actual.total.yw) || 0) + (parseFloat(actual.total.prac) || 0) + (parseFloat(actual.total.writ) || 0);
+
+                // تطبيق الحد الأقصى الصارم
+                if (!isAbs && numVal > maxLimit) numVal = maxLimit;
+
+                if (term === 't1' || term === 't2') {
+                    let tObj = actual[term];
+                    if (!tObj) return;
+                    
+                    // إلغاء حالة سبق النجاح لأن المستخدم أدخل درجة يدوية
+                    if (term === 't1') actual.passedT1 = false;
+                    if (term === 't2') actual.passedT2 = false;
+
+                    if (component === 'writ') {
+                        tObj.isAbsent = isAbs;
+                        tObj.writ = isAbs ? '-' : numVal;
+                    } else {
+                        tObj[component] = numVal;
+                    }
+                    tObj[component + '_edited'] = true;
+                    
+                    if (actual.t1 && actual.t2) {
+                        if (actual.t1.isAbsent && actual.t2.isAbsent) actual.absentTerms = 2;
+                        else if (actual.t1.isAbsent || actual.t2.isAbsent) actual.absentTerms = 1;
+                        else actual.absentTerms = 0;
+                    }
+                    
+                    // إعادة حساب الإجماليات للمقرر الممتد لضمان جمع الدرجات المضافة لغير المستجدين وتطبيق الرأفة عليها
+                    actual.total.yw = (parseFloat(actual.t1?.yw) || 0) + (parseFloat(actual.t2?.yw) || 0);
+                    actual.total.prac = (parseFloat(actual.t1?.prac) || 0) + (parseFloat(actual.t2?.prac) || 0);
+                    let t1W = actual.t1?.isAbsent ? 0 : (parseFloat(actual.t1?.writ) || 0);
+                    let t2W = actual.t2?.isAbsent ? 0 : (parseFloat(actual.t2?.writ) || 0);
+                    actual.total.writ = t1W + t2W;
+                    actual.isAbsent = actual.t1?.isAbsent && actual.t2?.isAbsent;
+                    actual.total.tot = actual.total.yw + actual.total.prac + actual.total.writ;
+                } else {
+                    actual.passedT1 = false;
+                    actual.passedT2 = false;
+
+                    if (component === 'writ') {
+                        actual.isAbsent = isAbs;
+                        actual.total.writ = isAbs ? 0 : numVal;
+                    } else {
+                        actual.total[component] = numVal;
+                    }
+                    actual.total[component + '_edited'] = true;
+                    actual.total.tot = (parseFloat(actual.total.yw) || 0) + (parseFloat(actual.total.prac) || 0) + (parseFloat(actual.total.writ) || 0);
+                }
             }
             
+            // إعادة رسم الجدول وتطبيق القواعد بالكامل فوراً
             renderMainTable(currentRenderedData);
         };
 
@@ -1708,15 +1731,45 @@
             closeExportModal();
         }
 
-        function buildContinuousCell(t1Val, t2Val, totVal, evaluateHalf, passedT1, passedT2) {
-            let t1Str = passedT1 ? `<span class="text-passed">نجح</span>` : (t1Val !== undefined ? t1Val : '-');
-            let t2Str = passedT2 ? `<span class="text-passed">نجح</span>` : (t2Val !== undefined ? t2Val : '-');
-            let tTot = totVal !== undefined ? totVal : '-';
+        function buildContinuousCell(t1Html, t2Html, totHtml) {
             return `<div class="term-breakdown">
-                        <div class="t-row">${t1Str}</div>
-                        <div class="t-row">${t2Str}</div>
-                        <div class="t-row last">${tTot}</div>
+                        <div class="t-row">${t1Html !== undefined ? t1Html : '-'}</div>
+                        <div class="t-row">${t2Html !== undefined ? t2Html : '-'}</div>
+                        <div class="t-row last">${totHtml !== undefined ? totHtml : '-'}</div>
                     </div>`;
+        }
+
+        function getEditableCell(val, term, component, studentIdx, subj) {
+            let isZeroOrAbs = val === 0 || val === '0' || val === 'غ' || val === 'غائب' || val === '-';
+            let isPassedText = val === 'نجح' || val === 'سبق نجاحه';
+            
+            let act = currentRenderedData[studentIdx].scores[subj];
+            let actT = term === 'total' ? act.total : act[term];
+            let isEdited = actT && actT[component + '_edited'];
+            let isNonFreshman = currentRenderedData[studentIdx].status && currentRenderedData[studentIdx].status.trim() !== 'مستجد';
+
+            let origPassed = false;
+            if (term === 't1' && act.passedT1) origPassed = true;
+            if (term === 't2' && act.passedT2) origPassed = true;
+            if (term === 'total' && (!dynamicContinuousSubjects.includes(subj)) && (act.passedT1 || act.passedT2)) origPassed = true;
+
+            if (isNonFreshman && (isZeroOrAbs || isPassedText || isEdited || origPassed)) {
+                let displayVal = val;
+                let bgColor = origPassed ? '#e8f5e9' : '#fff';
+                let color = origPassed ? '#1b5e20' : '#c62828';
+                
+                if (isEdited && actT[component] !== undefined && !isPassedText) {
+                    displayVal = actT[component];
+                    if (displayVal === '-' && (term === 'total' ? act.isAbsent : actT.isAbsent)) displayVal = 'غ';
+                }
+
+                return `<input type="text" class="edit-grade-input print-hide" style="width:40px; color:${color}; font-weight:bold; text-align:center; border: 1px solid #00bcd4; background: ${bgColor}; font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onchange="updateIndividualScore(${studentIdx}, '${subj}', '${term}', '${component}', this.value)">
+                        <span class="print-show" style="display:none; color:${color}; font-weight:bold;">${displayVal}</span>`;
+            }
+            
+            if (val === 'غ' || val === 'غائب') return '<span style="color:#c62828; font-weight:900;">غ</span>';
+            if (isPassedText) return `<span style="color:#2e7d32; font-weight:bold; font-size:13px;">${val}</span>`;
+            return val !== undefined ? val : '-';
         }
 
         function renderMainTable(dataArray) {
@@ -1905,6 +1958,8 @@
                         }
 
                         let bulkAdd = allowBulk ? (bulkAdditions[subject] || 0) : 0;
+                        let isSinglePassed = !isContinuous && (actual.passedT1 || actual.passedT2);
+
                         if (maxScore > 0 && bulkAdd > 0) {
                             let canApplyBulk = true;
                             if (excludeZeroWrittenFromBulk) {
@@ -1933,11 +1988,11 @@
                                         let spaceT2 = t2WMax - valT2W;
                                         if (spaceT2 > 0) {
                                             let addT2 = Math.min(remainingBulk, spaceT2);
-                                            valT2W += addT2; valTotW += addT2; actualAdded += addT2; remainingBulk -= addT2;
+                                            valT2W += addT2; valTotW += addT2; actualAdded += addT2;
                                         }
                                     }
                                 } else {
-                                    if (!currentIsAbsent) {
+                                    if (!currentIsAbsent && !isSinglePassed) {
                                         if (valTotW > currentMaxWrit) valTotW = currentMaxWrit;
                                         let space = currentMaxWrit - valTotW;
                                         if (space > 0) {
@@ -1956,7 +2011,7 @@
                                 if (valT1W > t1WMax) { valTotW -= (valT1W - t1WMax); valT1W = t1WMax; }
                                 if (valT2W > t2WMax) { valTotW -= (valT2W - t2WMax); valT2W = t2WMax; }
                             } else {
-                                if (valTotW > currentMaxWrit) valTotW = currentMaxWrit;
+                                if (valTotW > currentMaxWrit) { valTotW = currentMaxWrit; }
                             }
                         }
 
@@ -2080,200 +2135,74 @@
                         } else {
                             if (actual.passedT1 || actual.passedT2) passedStatusText = 'سبق نجاحه';
                         }
+                        
+                        let isSinglePassed = !isContinuous && (actual.passedT1 || actual.passedT2);
 
                         let fbLocal = getSubjectFallbackMaxes(subject);
-                        let valT1Yw = parseFloat(actual.t1?.yw) || 0;
-                        let valT2Yw = parseFloat(actual.t2?.yw) || 0;
-                        let valTotYw = parseFloat(actual.total?.yw) || 0;
-                        let dispT1Yw = actual.t1?.yw;
-                        let dispT2Yw = actual.t2?.yw;
-                        let dispTotYw = actual.total?.yw;
+                        
+                        let dispT1Yw = actual.passedT1 ? (actual.t1?.yw_edited ? actual.t1.yw : 'نجح') : actual.t1?.yw;
+                        let dispT2Yw = actual.passedT2 ? (actual.t2?.yw_edited ? actual.t2.yw : 'نجح') : actual.t2?.yw;
+                        let dispTotYw = isSinglePassed ? (actual.total?.yw_edited ? actual.total.yw : 'سبق نجاحه') : actual.total?.yw;
 
-                        let bYw = allowBulk ? (bulkYWAdditions[subject] || {t1:0, t2:0, total:0}) : {t1:0, t2:0, total:0};
+                        let dispT1Pr = actual.passedT1 ? (actual.t1?.prac_edited ? actual.t1.prac : 'نجح') : actual.t1?.prac;
+                        let dispT2Pr = actual.passedT2 ? (actual.t2?.prac_edited ? actual.t2.prac : 'نجح') : actual.t2?.prac;
+                        let dispTotPr = isSinglePassed ? (actual.total?.prac_edited ? actual.total.prac : 'سبق نجاحه') : actual.total?.prac;
 
-                        if (isForsa) {
-                            valTotYw = 0; dispTotYw = '-'; 
-                            valT1Yw = 0; dispT1Yw = '-';
-                            valT2Yw = 0; dispT2Yw = '-';
-                        } else if (isMokayed) {
-                            valTotYw = 0; dispTotYw = '-'; 
-                            valT1Yw = 0; dispT1Yw = '-';
-                            valT2Yw = 0; dispT2Yw = '-';
-                        } else if (!passedStatusText || evaluateHalf) {
-                            if (isContinuous) {
-                                let t1YwMax = actual.t1?.maxYW > 0 ? actual.t1.maxYW : fbLocal.yw / 2;
-                                let t2YwMax = actual.t2?.maxYW > 0 ? actual.t2.maxYW : fbLocal.yw / 2;
-                                
-                                if (valT1Yw > t1YwMax) { valT1Yw = t1YwMax; dispT1Yw = valT1Yw; }
-                                if (valT2Yw > t2YwMax) { valT2Yw = t2YwMax; dispT2Yw = valT2Yw; }
+                        let dispT1w = actual.passedT1 ? (actual.t1?.writ_edited ? actual.t1.writ : 'نجح') : (actual.t1?.isAbsent ? 'غ' : actual.t1?.writ);
+                        let dispT2w = actual.passedT2 ? (actual.t2?.writ_edited ? actual.t2.writ : 'نجح') : (actual.t2?.isAbsent ? 'غ' : actual.t2?.writ);
+                        let dispTotW = isSinglePassed ? (actual.total?.writ_edited ? actual.total.writ : 'سبق نجاحه') : (currentIsAbsent ? 'غ' : actual.total?.writ);
 
-                                if (!actual.passedT1 && bYw.t1 > 0 && dispT1Yw !== undefined && dispT1Yw !== '-') {
-                                    let added = Math.min(bYw.t1, t1YwMax - valT1Yw);
-                                    if(added > 0) { valT1Yw += added; dispT1Yw = valT1Yw; }
-                                }
-                                if (!actual.passedT2 && bYw.t2 > 0 && dispT2Yw !== undefined && dispT2Yw !== '-') {
-                                    let added = Math.min(bYw.t2, t2YwMax - valT2Yw);
-                                    if(added > 0) { valT2Yw += added; dispT2Yw = valT2Yw; }
-                                }
-                                valTotYw = (!actual.passedT1 ? valT1Yw : 0) + (!actual.passedT2 ? valT2Yw : 0);
-                                if(dispTotYw !== undefined && dispTotYw !== '-') dispTotYw = valTotYw;
-                            } else {
-                                let maxYw = maxs?.yearWork > 0 ? maxs.yearWork : fbLocal.yw;
-                                if (valTotYw > maxYw) { valTotYw = maxYw; dispTotYw = valTotYw; }
-
-                                if (bYw.total > 0 && dispTotYw !== undefined && dispTotYw !== '-') {
-                                    let added = Math.min(bYw.total, maxYw - valTotYw);
-                                    if(added > 0) { valTotYw += added; dispTotYw = valTotYw; }
-                                }
-                            }
-                        }
-
-                        function getEditableCell(val, term, component) {
-                            let isZeroOrAbs = val === 0 || val === '0' || val === 'غ' || val === 'غائب';
-                            let actualT = term === 'total' ? actual.total : actual[term];
-                            let isEdited = actualT && actualT[component + '_edited'];
-                            if (isNonFreshman && (isZeroOrAbs || isEdited)) {
-                                let displayVal = (val === 'غ' || val === 'غائب') ? 'غ' : val;
-                                return `<input type="text" class="edit-grade-input print-hide" style="width:40px; color:#c62828; font-weight:bold; text-align:center; border: 1px solid #00bcd4; background: #fff; font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onchange="updateIndividualScore(${studentIndex}, '${subject}', '${term}', '${component}', this.value)">
-                                        <span class="print-show" style="display:none; color:#c62828;">${displayVal}</span>`;
-                            }
-                            return (val === 'غ' || val === 'غائب') ? '<span style="color:#c62828;">غ</span>' : val;
-                        }
-
-                        let htmlT1Yw = getEditableCell(dispT1Yw, 't1', 'yw');
-                        let htmlT2Yw = getEditableCell(dispT2Yw, 't2', 'yw');
-                        let htmlTotYw = getEditableCell(dispTotYw, 'total', 'yw');
+                        let htmlT1Yw = getEditableCell(dispT1Yw, 't1', 'yw', studentIndex, subject);
+                        let htmlT2Yw = getEditableCell(dispT2Yw, 't2', 'yw', studentIndex, subject);
+                        let htmlTotYw = getEditableCell(dispTotYw, 'total', 'yw', studentIndex, subject);
 
                         let tdYW = document.createElement('td'); tdYW.className = subCls;
-                        if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw, evaluateHalf, actual.passedT1, actual.passedT2);
+                        if(isContinuous) {
+                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw);
                         } else {
-                            tdYW.innerHTML = (htmlTotYw !== undefined && htmlTotYw !== '-') ? htmlTotYw : '-';
+                            tdYW.innerHTML = htmlTotYw;
                         }
                         tr.appendChild(tdYW);
 
                         let tdPrac = null;
-                        let valT1Pr = parseFloat(actual.t1?.prac) || 0;
-                        let valT2Pr = parseFloat(actual.t2?.prac) || 0;
-                        let valTotPr = parseFloat(actual.total?.prac) || 0;
-                        let dispT1Pr = actual.t1?.prac;
-                        let dispT2Pr = actual.t2?.prac;
-                        let dispTotPr = actual.total?.prac;
-
                         if (hasPractical) {
-                            let bPr = allowBulk ? (bulkPracAdditions[subject] || {t1:0, t2:0, total:0}) : {t1:0, t2:0, total:0};
-                            if (isMokayed) {
-                                valTotPr = 0; dispTotPr = '-'; 
-                                valT1Pr = 0; dispT1Pr = '-';
-                                valT2Pr = 0; dispT2Pr = '-';
-                            } else if (!passedStatusText || evaluateHalf) {
-                                if (isContinuous) {
-                                    let t1PrMax = actual.t1?.maxPrac > 0 ? actual.t1.maxPrac : fbLocal.pr / 2;
-                                    let t2PrMax = actual.t2?.maxPrac > 0 ? actual.t2.maxPrac : fbLocal.pr / 2;
-                                    
-                                    if (valT1Pr > t1PrMax) { valT1Pr = t1PrMax; dispT1Pr = valT1Pr; }
-                                    if (valT2Pr > t2PrMax) { valT2Pr = t2PrMax; dispT2Pr = valT2Pr; }
-
-                                    if (!actual.passedT1 && bPr.t1 > 0 && dispT1Pr !== undefined && dispT1Pr !== '-') {
-                                        let added = Math.min(bPr.t1, t1PrMax - valT1Pr);
-                                        if(added > 0) { valT1Pr += added; dispT1Pr = valT1Pr; }
-                                    }
-                                    if (!actual.passedT2 && bPr.t2 > 0 && dispT2Pr !== undefined && dispT2Pr !== '-') {
-                                        let added = Math.min(bPr.t2, t2PrMax - valT2Pr);
-                                        if(added > 0) { valT2Pr += added; dispT2Pr = valT2Pr; }
-                                    }
-                                    valTotPr = (!actual.passedT1 ? valT1Pr : 0) + (!actual.passedT2 ? valT2Pr : 0);
-                                    if(dispTotPr !== undefined && dispTotPr !== '-') dispTotPr = valTotPr;
-                                } else {
-                                    let maxPr = maxs?.practical > 0 ? maxs.practical : fbLocal.pr;
-                                    if (valTotPr > maxPr) { valTotPr = maxPr; dispTotPr = valTotPr; }
-
-                                    if (bPr.total > 0 && dispTotPr !== undefined && dispTotPr !== '-') {
-                                        let added = Math.min(bPr.total, maxPr - valTotPr);
-                                        if(added > 0) { valTotPr += added; dispTotPr = valTotPr; }
-                                    }
-                                }
-                            }
-
-                            let htmlT1Pr = getEditableCell(dispT1Pr, 't1', 'prac');
-                            let htmlT2Pr = getEditableCell(dispT2Pr, 't2', 'prac');
-                            let htmlTotPr = getEditableCell(dispTotPr, 'total', 'prac');
+                            let htmlT1Pr = getEditableCell(dispT1Pr, 't1', 'prac', studentIndex, subject);
+                            let htmlT2Pr = getEditableCell(dispT2Pr, 't2', 'prac', studentIndex, subject);
+                            let htmlTotPr = getEditableCell(dispTotPr, 'total', 'prac', studentIndex, subject);
 
                             tdPrac = document.createElement('td'); tdPrac.className = subCls;
-                            if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr, evaluateHalf, actual.passedT1, actual.passedT2);
+                            if(isContinuous) {
+                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr);
                             } else {
-                                tdPrac.innerHTML = (htmlTotPr !== undefined && htmlTotPr !== '-') ? htmlTotPr : '-';
+                                tdPrac.innerHTML = htmlTotPr;
                             }
                             tr.appendChild(tdPrac);
                         }
                         
-                        let valT1W = (!actual.t1?.isAbsent && actual.t1?.writ !== undefined && actual.t1?.writ !== '-') ? parseFloat(actual.t1.writ) : 0;
-                        let valT2W = (!actual.t2?.isAbsent && actual.t2?.writ !== undefined && actual.t2?.writ !== '-') ? parseFloat(actual.t2.writ) : 0;
-                        let valTotW = 0;
-                        if (isContinuous) {
-                            valTotW = (!actual.passedT1 ? valT1W : 0) + (!actual.passedT2 ? valT2W : 0);
-                        } else {
-                            valTotW = (!currentIsAbsent && actual.total?.writ !== undefined && actual.total?.writ !== '-') ? parseFloat(actual.total.writ) : 0;
-                        }
+                        let baseObj = subjectsBaseData[subject] || {};
+                        let valT1W = baseObj.valT1W !== undefined ? baseObj.valT1W : 0;
+                        let valT2W = baseObj.valT2W !== undefined ? baseObj.valT2W : 0;
+                        let valTotW = baseObj.valTotW !== undefined ? baseObj.valTotW : 0;
                         
-                        let dispT1w = actual.t1?.isAbsent ? 'غ' : actual.t1?.writ;
-                        if (subject === 'الرسم الهندسي') { dispT1w = '-'; }
-                        let dispT2w = actual.t2?.isAbsent ? 'غ' : actual.t2?.writ;
-                        let dispTotW = currentIsAbsent ? 'غ' : actual.total?.writ;
+                        let finalScore = baseObj.finalScore !== undefined ? baseObj.finalScore : 0; 
+                        let maxScore = baseObj.maxScore !== undefined ? baseObj.maxScore : 0; 
+                        let currentMaxWrit = baseObj.currentMaxWrit !== undefined ? baseObj.currentMaxWrit : 0;
 
-                        let finalScore = valTotYw + valTotPr + valTotW; 
-                        if (currentIsAbsent) finalScore = 0;
-                        let maxScore = maxs?.finalTotal || 0; 
-                        let currentMaxWrit = maxs?.written || 0;
-
-                        if (maxScore === 0) { maxScore = fbLocal.tot; currentMaxWrit = fbLocal.wr; }
-                        if (evaluateHalf) { maxScore = maxScore / 2; currentMaxWrit = currentMaxWrit / 2; }
-                        
-                        if (isForsa && !currentIsAbsent) {
-                            let maxPrac = maxs?.practical > 0 ? maxs.practical : (hasPractical ? fbLocal.pr : 0);
-                            if (evaluateHalf) maxPrac = maxPrac / 2;
-                            let maxNonYw = currentMaxWrit + maxPrac;
-                            if (maxNonYw > 0) {
-                                let calculated = (((valTotPr + valTotW) / maxNonYw) * maxScore);
-                                let remainder = calculated % 1;
-                                if (remainder > 0 && remainder <= 0.5) finalScore = Math.floor(calculated) + 0.5;
-                                else if (remainder > 0.5) finalScore = Math.ceil(calculated);
-                                else finalScore = calculated;
-                            } else {
-                                finalScore = valTotPr + valTotW;
-                            }
-                        } else if (isMokayed && !currentIsAbsent) {
-                            if (currentMaxWrit > 0) {
-                                let calculated = ((valTotW / currentMaxWrit) * maxScore);
-                                let remainder = calculated % 1;
-                                if (remainder > 0 && remainder <= 0.5) finalScore = Math.floor(calculated) + 0.5;
-                                else if (remainder > 0.5) finalScore = Math.ceil(calculated);
-                                else finalScore = calculated;
-                            } else {
-                                finalScore = valTotW;
-                            }
-                        }
-                        
                         let bulkAdd = allowBulk ? (bulkAdditions[subject] || 0) : 0;
-                        
                         if (maxScore > 0 && bulkAdd > 0) {
                             let canApplyBulk = true;
                             if (excludeZeroWrittenFromBulk) {
-                                if (currentIsAbsent || actual.total?.writ === 0 || actual.total?.writ === '-') { canApplyBulk = false; }
+                                if (currentIsAbsent || actual.total?.writ === 0 || actual.total?.writ === '-') canApplyBulk = false;
                             }
-                            
                             if (canApplyBulk) {
                                 let actualAdded = 0;
+                                let spaceTotal = maxScore - finalScore;
+                                if (spaceTotal < 0) spaceTotal = 0;
                                 
                                 if (isContinuous) {
                                     let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
                                     let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
-                                    
-                                    if (valT1W > t1WMax) { valT1W = t1WMax; dispT1w = valT1W; }
-                                    if (valT2W > t2WMax) { valT2W = t2WMax; dispT2w = valT2W; }
-
-                                    let remainingBulk = bulkAdd;
+                                    let remainingBulk = Math.min(bulkAdd, spaceTotal);
 
                                     if (!actual.t1?.isAbsent && !actual.passedT1) {
                                         let spaceT1 = t1WMax - valT1W;
@@ -2286,41 +2215,36 @@
                                         let spaceT2 = t2WMax - valT2W;
                                         if (spaceT2 > 0) {
                                             let addT2 = Math.min(remainingBulk, spaceT2);
-                                            valT2W += addT2; dispT2w = valT2W; valTotW += addT2; actualAdded += addT2; remainingBulk -= addT2;
+                                            valT2W += addT2; dispT2w = valT2W; valTotW += addT2; actualAdded += addT2;
                                         }
                                     }
                                     dispTotW = valTotW;
                                 } else {
-                                    if (!currentIsAbsent) {
-                                        if (valTotW > currentMaxWrit) { valTotW = currentMaxWrit; dispTotW = valTotW; }
+                                    if (!currentIsAbsent && !isSinglePassed) {
                                         let space = currentMaxWrit - valTotW;
                                         if (space > 0) {
-                                            actualAdded = Math.min(bulkAdd, space);
+                                            actualAdded = Math.min(bulkAdd, space, spaceTotal);
                                             valTotW += actualAdded; dispTotW = valTotW;
                                         }
                                     }
                                 }
-                                
                                 finalScore += actualAdded;
-                                if (finalScore > maxScore) finalScore = maxScore; 
                             }
-                        } else {
-                            if (isContinuous) {
-                                let t1WMax = actual.t1?.maxWr > 0 ? actual.t1.maxWr : (subject === 'الرسم الهندسي' ? 0 : fbLocal.wr / 2);
-                                let t2WMax = actual.t2?.maxWr > 0 ? actual.t2.maxWr : (subject === 'الرسم الهندسي' ? fbLocal.wr : fbLocal.wr / 2);
-                                if (valT1W > t1WMax) { valTotW -= (valT1W - t1WMax); valT1W = t1WMax; dispT1w = valT1W; }
-                                if (valT2W > t2WMax) { valTotW -= (valT2W - t2WMax); valT2W = t2WMax; dispT2w = valT2W; }
-                                dispTotW = currentIsAbsent ? 'غ' : valTotW;
-                            } else {
-                                if (valTotW > currentMaxWrit) { valTotW = currentMaxWrit; dispTotW = valTotW; }
-                            }
-                        }
+                        } 
 
                         let rawWrittenForTooltip = valTotW;
-                        if (isForsa && !currentIsAbsent) rawWrittenForTooltip = valTotPr + valTotW;
+                        let isForsa = student.status && student.status.includes("فرص");
+                        if (isForsa && !currentIsAbsent) {
+                            let valTotPr = parseFloat(actual.total?.prac) || 0;
+                            if (hasPractical && isContinuous) {
+                                valTotPr = (!actual.passedT1 ? parseFloat(actual.t1?.prac) || 0 : 0) + (!actual.passedT2 ? parseFloat(actual.t2?.prac) || 0 : 0);
+                            }
+                            rawWrittenForTooltip = valTotPr + valTotW;
+                        }
+
                         let scaledMokayedScore = finalScore;
 
-                        let isCapped = applyAtRiskRules && student._capRepeater && student._capRepeater[subject];
+                        let isCapped = baseObj.isCapped;
                         let wasActuallyCapped = false;
                         let capBtnHtml = '';
                         
@@ -2335,16 +2259,16 @@
                             if (finalScore > capLimit) { finalScore = capLimit; wasActuallyCapped = true; }
                         }
 
-                        let htmlT1w = getEditableCell(dispT1w, 't1', 'writ');
+                        let htmlT1w = getEditableCell(dispT1w, 't1', 'writ', studentIndex, subject);
                         if (subject === 'الرسم الهندسي') { htmlT1w = '-'; }
-                        let htmlT2w = getEditableCell(dispT2w, 't2', 'writ');
-                        let htmlTotW = getEditableCell(dispTotW, 'total', 'writ');
+                        let htmlT2w = getEditableCell(dispT2w, 't2', 'writ', studentIndex, subject);
+                        let htmlTotW = getEditableCell(dispTotW, 'total', 'writ', studentIndex, subject);
 
                         let tdWrit = document.createElement('td'); tdWrit.className = subCls;
-                        if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW, evaluateHalf, actual.passedT1, actual.passedT2);
+                        if(isContinuous) {
+                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW);
                         } else {
-                            tdWrit.innerHTML = (htmlTotW !== undefined && htmlTotW !== '-') ? htmlTotW : '-'; 
+                            tdWrit.innerHTML = htmlTotW; 
                         }
                         tr.appendChild(tdWrit);
 
@@ -2354,25 +2278,18 @@
                         let subjectIsFailed = false;
                         let graceAdded = 0; let upgradeAdded = 0;
 
+                        let isMokayed = student.status && student.status.includes("مقيد");
                         let isSpecialCalculated = (isMokayed || isForsa) && !currentIsAbsent;
+                        let hasBeenEdited = actual.total.yw_edited || actual.total.prac_edited || actual.total.writ_edited;
+                        if (isContinuous) {
+                            hasBeenEdited = actual.t1?.yw_edited || actual.t1?.prac_edited || actual.t1?.writ_edited ||
+                                            actual.t2?.yw_edited || actual.t2?.prac_edited || actual.t2?.writ_edited;
+                        }
 
-                        if (passedStatusText && !evaluateHalf) {
+                        if (passedStatusText && !evaluateHalf && !hasBeenEdited) {
                             tdGrade.innerHTML = `<span class="text-passed">${passedStatusText}</span>`;
                             internalStatsGrade = 'سبق نجاحه';
-                            if (finalScore > 0) {
-                                let displayScore = finalScore;
-                                if (isSpecialCalculated) {
-                                    displayScore = `<div class="mokayed-tooltip">
-                                                        <div class="grace-wrapper">
-                                                            <span class="mokayed-badge" style="margin-bottom: 2px;">${scaledMokayedScore}</span>
-                                                            <span class="grace-original">${rawWrittenForTooltip}</span>
-                                                        </div>
-                                                        <span class="tooltip-text">الدرجة الأصلية: ${rawWrittenForTooltip}<br>الدرجة المعدلة: ${scaledMokayedScore}</span>
-                                                    </div>`;
-                                }
-                                tdTotal.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between;"><span></span><span>${displayScore}</span>${capBtnHtml}</div>`;
-                                studentGrandTotal += finalScore; studentMaxGrandTotal += maxScore;
-                            } else { tdTotal.textContent = '-'; }
+                            tdTotal.textContent = '-'; 
                         } else if (maxScore > 0 || currentIsAbsent) {
                             let percentage = (finalScore / maxScore) * 100;
                             let isFailing = false; let isBylawFailing = false;
@@ -3177,7 +3094,7 @@
         }
 
         function generateTargetReport() {
-            if (currentRenderedData.length === 0) return; // Silent check to avoid errors on load
+            if (currentRenderedData.length === 0) return; 
             
             let limit = parseInt(document.getElementById('targetMarksLimit').value) || 0;
             let targetStatusRadio = document.querySelector('input[name="targetStatusRadio"]:checked');
@@ -3205,7 +3122,7 @@
                 let statusBefore = student._displayData.finalStatus;
 
                 if (statusBefore.includes("غائب ويفصل") || statusBefore === "غائب") return;
-                if (currentFails <= targetFailsAllowed) return; // Already meets target
+                if (currentFails <= targetFailsAllowed) return; 
 
                 let failedSubjects = [];
                 defaultSubjects.forEach(sub => {
