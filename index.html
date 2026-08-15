@@ -1823,8 +1823,6 @@
                         let currentIsAbsent = actual.isAbsent;
                         if (isContinuous && actual.totalTerms > 0) currentIsAbsent = (actual.absentTerms === actual.totalTerms);
 
-                        if (currentIsAbsent) absentSubjectsCount++;
-                        
                         let p1 = actual.passedT1 && !actual.t1?.recovered;
                         let p2 = actual.passedT2 && !actual.t2?.recovered;
 
@@ -2168,8 +2166,9 @@
                             let isZeroOrAbs = val === 0 || val === '0' || val === 'غ' || val === 'غائب';
                             let actualT = term === 'total' ? actual.total : actual[term];
                             let isEdited = actualT && actualT[component + '_edited'];
+                            let isTermRow = (term === 't1' || term === 't2');
                             
-                            if (isNonFreshman && (isZeroOrAbs || isEdited || isPassedTerm || isRecovered)) {
+                            if (isNonFreshman && (isZeroOrAbs || isEdited || (isPassedTerm && isTermRow) || isRecovered)) {
                                 let displayVal = val;
                                 if (isPassedTerm && !isEdited && !isRecovered && (val === '-' || val === undefined)) {
                                     displayVal = 'نجح';
@@ -2179,7 +2178,7 @@
                                 let bgStyle = (isPassedTerm || isRecovered) ? "background: #e8f5e9; border: 1px solid #2e7d32;" : "background: #fff; border: 1px solid #00bcd4;";
                                 let colorStyle = (isPassedTerm || isRecovered) ? "color: #2e7d32;" : "color: #c62828;";
                                 
-                                return `<input type="text" class="edit-grade-input print-hide" style="width:40px; ${colorStyle} font-weight:bold; text-align:center; ${bgStyle} font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onchange="updateIndividualScore(${studentIndex}, '${subject}', '${term}', '${component}', this.value)">
+                                return `<input type="text" class="edit-grade-input print-hide" style="width:40px; ${colorStyle} font-weight:bold; text-align:center; ${bgStyle} font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onfocus="if(this.value==='نجح') this.value='';" onblur="if(this.value==='') this.value='نجح';" onchange="updateIndividualScore(${studentIndex}, '${subject}', '${term}', '${component}', this.value)">
                                         <span class="print-show" style="display:none; ${colorStyle}">${displayVal}</span>`;
                             }
                             if (isPassedTerm && !isRecovered) return '<span class="text-passed">نجح</span>';
@@ -2326,7 +2325,7 @@
                                         let spaceT1 = t1WMax - valT1W;
                                         if (spaceT1 > 0) {
                                             let addT1 = Math.min(remainingBulk, spaceT1);
-                                            valT1W += addT1; dispT1w = valT1W; valTotW += addT1; actualAdded += addT1; remainingBulk -= addT1;
+                                            valT1W += addT1; valTotW += addT1; actualAdded += addT1; remainingBulk -= addT1;
                                         }
                                     }
                                     if (remainingBulk > 0 && !actual.passedT2 && !actual.t2?.isAbsent) {
