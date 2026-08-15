@@ -586,6 +586,58 @@
     
     <button class="floating-btn" onclick="toggleUIVisibility()">👁️</button>
 <script>
+        // إضافة تنسيقات إخفاء حقول التعديل في الطباعة
+        let printStyle = document.createElement('style');
+        printStyle.innerHTML = `
+            @media print {
+                .edit-grade-input { display: none !important; }
+                .print-show { display: inline !important; }
+            }
+        `;
+        document.head.appendChild(printStyle);
+
+        window.updateIndividualScore = function(studentIndex, subject, term, component, newValue) {
+            let student = currentRenderedData[studentIndex];
+            if (!student) return;
+            
+            let actual = student.scores[subject];
+            let val = newValue.trim();
+            if (val === '') return;
+            
+            let isAbs = val === 'غ' || val === 'غائب';
+            let numVal = isAbs ? 0 : parseFloat(val);
+            if (!isAbs && isNaN(numVal)) numVal = 0;
+
+            if (term === 't1' || term === 't2') {
+                let tObj = actual[term];
+                if (!tObj) return;
+                if (component === 'writ') {
+                    tObj.isAbsent = isAbs;
+                    tObj.writ = isAbs ? '-' : numVal;
+                } else {
+                    tObj[component] = numVal;
+                }
+                tObj[component + '_edited'] = true;
+                
+                if (actual.t1 && actual.t2) {
+                    if (actual.t1.isAbsent && actual.t2.isAbsent) actual.absentTerms = 2;
+                    else if (actual.t1.isAbsent || actual.t2.isAbsent) actual.absentTerms = 1;
+                    else actual.absentTerms = 0;
+                }
+            } else {
+                if (component === 'writ') {
+                    actual.isAbsent = isAbs;
+                    actual.total.writ = isAbs ? 0 : numVal;
+                } else {
+                    actual.total[component] = numVal;
+                }
+                actual.total[component + '_edited'] = true;
+            }
+            
+            // إعادة رسم الجدول وتطبيق القواعد بالكامل فوراً
+            renderMainTable(currentRenderedData);
+        };
+
         function sortStudents(a, b) {
             let numA = parseInt(a.seatNumber);
             let numB = parseInt(b.seatNumber);
@@ -1953,6 +2005,8 @@
                     }
 
                     // --- PASS 3: Generate HTML & Apply Final Logic ---
+                    let isNonFreshman = student.status && student.status.trim() !== 'مستجد';
+
                     defaultSubjects.forEach(subject => {
                         let actual = student?.scores?.[subject] || {}; 
                         let maxs = student?.maxScores?.[subject] || {};
@@ -2013,11 +2067,27 @@
                             }
                         }
 
+                        function getEditableCell(val, term, component) {
+                            let isZeroOrAbs = val === 0 || val === '0' || val === 'غ' || val === 'غائب';
+                            let actualT = term === 'total' ? actual.total : actual[term];
+                            let isEdited = actualT && actualT[component + '_edited'];
+                            if (isNonFreshman && (isZeroOrAbs || isEdited)) {
+                                let displayVal = (val === 'غ' || val === 'غائب') ? 'غ' : val;
+                                return `<input type="text" class="edit-grade-input print-hide" style="width:40px; color:#c62828; font-weight:bold; text-align:center; border: 1px solid #00bcd4; background: #fff; font-size:15px; padding:2px; border-radius:4px;" value="${displayVal}" onchange="updateIndividualScore(${studentIndex}, '${subject}', '${term}', '${component}', this.value)">
+                                        <span class="print-show" style="display:none; color:#c62828;">${displayVal}</span>`;
+                            }
+                            return (val === 'غ' || val === 'غائب') ? '<span style="color:#c62828;">غ</span>' : val;
+                        }
+
+                        let htmlT1Yw = getEditableCell(dispT1Yw, 't1', 'yw');
+                        let htmlT2Yw = getEditableCell(dispT2Yw, 't2', 'yw');
+                        let htmlTotYw = getEditableCell(dispTotYw, 'total', 'yw');
+
                         let tdYW = document.createElement('td'); tdYW.className = subCls;
                         if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdYW.innerHTML = buildContinuousCell(dispT1Yw, dispT2Yw, dispTotYw, evaluateHalf, actual.passedT1, actual.passedT2);
+                            tdYW.innerHTML = buildContinuousCell(htmlT1Yw, htmlT2Yw, htmlTotYw, evaluateHalf, actual.passedT1, actual.passedT2);
                         } else {
-                            tdYW.textContent = (dispTotYw !== undefined && dispTotYw !== '-') ? dispTotYw : '-';
+                            tdYW.innerHTML = (htmlTotYw !== undefined && htmlTotYw !== '-') ? htmlTotYw : '-';
                         }
                         tr.appendChild(tdYW);
 
@@ -2058,11 +2128,15 @@
                                 }
                             }
 
+                            let htmlT1Pr = getEditableCell(dispT1Pr, 't1', 'prac');
+                            let htmlT2Pr = getEditableCell(dispT2Pr, 't2', 'prac');
+                            let htmlTotPr = getEditableCell(dispTotPr, 'total', 'prac');
+
                             tdPrac = document.createElement('td'); tdPrac.className = subCls;
                             if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                                tdPrac.innerHTML = buildContinuousCell(dispT1Pr, dispT2Pr, dispTotPr, evaluateHalf, actual.passedT1, actual.passedT2);
+                                tdPrac.innerHTML = buildContinuousCell(htmlT1Pr, htmlT2Pr, htmlTotPr, evaluateHalf, actual.passedT1, actual.passedT2);
                             } else {
-                                tdPrac.textContent = (dispTotPr !== undefined && dispTotPr !== '-') ? dispTotPr : '-';
+                                tdPrac.innerHTML = (htmlTotPr !== undefined && htmlTotPr !== '-') ? htmlTotPr : '-';
                             }
                             tr.appendChild(tdPrac);
                         }
@@ -2072,10 +2146,10 @@
                         let valT2W = baseObj.valT2W !== undefined ? baseObj.valT2W : 0;
                         let valTotW = baseObj.valTotW !== undefined ? baseObj.valTotW : 0;
                         
-                        let dispT1w = actual.t1?.isAbsent ? '<span style="color:#c62828;">غ</span>' : actual.t1?.writ;
+                        let dispT1w = actual.t1?.isAbsent ? 'غ' : actual.t1?.writ;
                         if (subject === 'الرسم الهندسي') { dispT1w = '-'; }
-                        let dispT2w = actual.t2?.isAbsent ? '<span style="color:#c62828;">غ</span>' : actual.t2?.writ;
-                        let dispTotW = currentIsAbsent ? '<span style="color:#c62828;">غ</span>' : actual.total?.writ;
+                        let dispT2w = actual.t2?.isAbsent ? 'غ' : actual.t2?.writ;
+                        let dispTotW = currentIsAbsent ? 'غ' : actual.total?.writ;
 
                         let finalScore = valTotYw + valTotPr + valTotW; 
                         if (currentIsAbsent) finalScore = 0;
@@ -2177,12 +2251,16 @@
                             if (finalScore > capLimit) { finalScore = capLimit; wasActuallyCapped = true; }
                         }
 
+                        let htmlT1w = getEditableCell(dispT1w, 't1', 'writ');
+                        if (subject === 'الرسم الهندسي') { htmlT1w = '-'; }
+                        let htmlT2w = getEditableCell(dispT2w, 't2', 'writ');
+                        let htmlTotW = getEditableCell(dispTotW, 'total', 'writ');
+
                         let tdWrit = document.createElement('td'); tdWrit.className = subCls;
                         if(isContinuous && (!passedStatusText || evaluateHalf)) {
-                            tdWrit.innerHTML = buildContinuousCell(dispT1w, dispT2w, dispTotW, evaluateHalf, actual.passedT1, actual.passedT2);
+                            tdWrit.innerHTML = buildContinuousCell(htmlT1w, htmlT2w, htmlTotW, evaluateHalf, actual.passedT1, actual.passedT2);
                         } else {
-                            if (currentIsAbsent) { tdWrit.innerHTML = '<span style="color:#c62828;">غ</span>'; } 
-                            else { tdWrit.textContent = (dispTotW !== undefined && dispTotW !== '-') ? dispTotW : '-'; }
+                            tdWrit.innerHTML = (htmlTotW !== undefined && htmlTotW !== '-') ? htmlTotW : '-'; 
                         }
                         tr.appendChild(tdWrit);
 
@@ -2388,11 +2466,11 @@
                             finalWithGraceAndUpgrade: currentIsAbsent ? 'غ' : (finalScore + graceAdded + upgradeAdded)
                         };
 
-                        let certYw = isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':(dispT1Yw !== undefined ? dispT1Yw : '-')}</div><div class="cert-term-row">${actual.passedT2?'نجح':(dispT2Yw !== undefined ? dispT2Yw : '-')}</div><div class="cert-tot-row">${dispTotYw !== undefined ? dispTotYw : '-'}</div>` : tdYW.innerHTML;
-                        let certPrac = tdPrac ? (isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':(dispT1Pr !== undefined ? dispT1Pr : '-')}</div><div class="cert-term-row">${actual.passedT2?'نجح':(dispT2Pr !== undefined ? dispT2Pr : '-')}</div><div class="cert-tot-row">${dispTotPr !== undefined ? dispTotPr : '-'}</div>` : tdPrac.innerHTML) : '-';
+                        let certYw = isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':(dispT1Yw !== undefined ? dispT1Yw : '-')}</div><div class="cert-term-row">${actual.passedT2?'نجح':(dispT2Yw !== undefined ? dispT2Yw : '-')}</div><div class="cert-tot-row">${dispTotYw !== undefined ? dispTotYw : '-'}</div>` : (dispTotYw !== undefined && dispTotYw !== '-' ? dispTotYw : '-');
+                        let certPrac = tdPrac ? (isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':(dispT1Pr !== undefined ? dispT1Pr : '-')}</div><div class="cert-term-row">${actual.passedT2?'نجح':(dispT2Pr !== undefined ? dispT2Pr : '-')}</div><div class="cert-tot-row">${dispTotPr !== undefined ? dispTotPr : '-'}</div>` : (dispTotPr !== undefined && dispTotPr !== '-' ? dispTotPr : '-')) : '-';
                         let writT1 = actual.t1?.isAbsent ? 'غ' : dispT1w; 
                         let writT2 = actual.t2?.isAbsent ? 'غ' : dispT2w;
-                        let certWrit = isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':writT1}</div><div class="cert-term-row">${actual.passedT2?'نجح':writT2}</div><div class="cert-tot-row">${currentIsAbsent?'غ':dispTotW}</div>` : tdWrit.innerHTML;
+                        let certWrit = isContinuous ? `<div class="cert-term-row">${actual.passedT1?'نجح':writT1}</div><div class="cert-term-row">${actual.passedT2?'نجح':writT2}</div><div class="cert-tot-row">${currentIsAbsent?'غ':dispTotW}</div>` : (currentIsAbsent ? 'غ' : (dispTotW !== undefined && dispTotW !== '-' ? dispTotW : '-'));
 
                         if(student._displayData) student._displayData[subject] = {
                             yw: certYw, prac: certPrac, writ: certWrit, tot: tdTotal.innerHTML, grd: tdGrade.innerHTML
@@ -3176,8 +3254,6 @@
         }
 
         window.onload = function() { initMappingTable(); }
-    </script>
-
-    
+    </script>    
 </body>
 </html>
